@@ -8,7 +8,7 @@
 
 
 std::string line;
-char * fakefilename = "/home/mzhong/cjq/serverOrcLibTest1/city.orc";
+char * fakefilename = "/usr/pgsql-9.4/city.orc";
 
 orc::ReaderOptions opts;
 /*init first, avoid init with abstract obj. Then change in initOrcReader()*/

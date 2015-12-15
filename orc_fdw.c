@@ -39,8 +39,7 @@
 
 #include "storage/fd.h"
 #include "orc_fdw.h"
-#include "orc_reader.h"
-#include "hello.h"
+#include "orcLibBridge.h"
 
 PG_MODULE_MAGIC;
 
@@ -417,7 +416,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
      */
     orcState = (OrcExeState *) palloc(sizeof(OrcExeState));
     orcState->filename = options->filename;
-    orcState->file = AllocateFile(orcState->filename, "r");
+    //orcState->file = AllocateFile(orcState->filename, "r");
+    initOrcReader(orcState->filename);
     //get colNum
     orcState->colNum = slot->tts_tupleDescriptor->natts;
 
@@ -465,12 +465,10 @@ fileIterateForeignScan(ForeignScanState *node)
      * foreign tables.
      */
     ExecClearTuple(slot);
-    int hh = hello(97);
-    //fprintf(logfile, "age: %d\n", hh);
-    //fflush(logfile);
 
     //start my simulation
-    char * nextLine = orcReadNextRow(orcState->file);
+    //char * nextLine = orcReadNextRow(orcState->file);
+    char * nextLine = getLine();
     //fprintf(logfile, "%s", nextLine);
     //fflush(logfile);
 
@@ -547,10 +545,10 @@ fileEndForeignScan(ForeignScanState *node)
     }
     /*TODO: clears all file related memory */
 
-    if (orcState->file)
-    {
-        FreeFile(orcState->file);
-    }
+    //if (orcState->file)
+    //{
+       // FreeFile(orcState->file);
+    //}
 
     pfree(orcState);
 

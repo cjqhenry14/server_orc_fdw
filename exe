@@ -1,6 +1,6 @@
 #!/bin/sh
-rm -r orc_fdw.*o
-rm -r orc_reader.*o
-rm -r hello.o
+rm -f orc_fdw.*o
+rm -f orc_reader.*o
+rm -f hello.o
 
 sudo make USE_PGXS=1 install
