@@ -483,7 +483,7 @@ fileIterateForeignScan(ForeignScanState *node)
     /* initialize all values for this row to null */
     memset(columnValues, 0, colNum * sizeof(Datum));
 
-    if(count < 7) {
+    if(count < 3) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
