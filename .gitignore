@@ -1,0 +1,6 @@
+Makefile
+.idea/
+*.o
+*.so
+*.a
+bck/

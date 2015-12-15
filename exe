@@ -1,0 +1,6 @@
+#!/bin/sh
+rm -rf orc_fdw.*o
+rm -rf orc_reader.*o
+rm -rf hello.o
+
+sudo make USE_PGXS=1 install
