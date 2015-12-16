@@ -1,15 +1,14 @@
-Makefile is not here, can see https://github.com/cjqhenry14/officialfile_fdw
+
 #complie
 ./exe
 
 #use it
-psql
+psql fdw_db mzhong
 
 CREATE EXTENSION orc_fdw;
 
 create server orc_server foreign data wrapper orc_fdw;
 
-create foreign table orc_city(id int,cname varchar(80))
-server orc_server options(filename '/Users/chenjiaqi/524/fdwtest1/city.txt',format 'text', delimiter ',');
+create foreign table orc_city(id int,cname varchar(80)) server orc_server options(filename '/usr/pgsql-9.4/city.orc');
 
 select * from orc_city;

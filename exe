@@ -1,6 +1,10 @@
 #!/bin/sh
-rm -f orc_fdw.*o
-rm -f orc_reader.*o
-rm -f hello.o
+
+rm -f *.o
+rm -f *.a
+
+gcc -fPIC -std=c++11  -c orcLibBridge.cpp  -o orcLibBridge.o  -I orcInclude -L orcLib -lz -lsnappy -lorc -lgmock -lprotobuf -lstdc++
+
+ar rsc liborcLibBridge.a orcLibBridge.o
 
 sudo make USE_PGXS=1 install
