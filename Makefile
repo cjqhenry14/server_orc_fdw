@@ -1,6 +1,5 @@
 #contrib/orc_fdw/Makefile
 
-CCC=g++
 MODULE_big = orc_fdw
 
 EXTENSION = orc_fdw
