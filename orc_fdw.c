@@ -417,7 +417,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     orcState = (OrcExeState *) palloc(sizeof(OrcExeState));
     orcState->filename = options->filename;
     //orcState->file = AllocateFile(orcState->filename, "r");
-    initOrcReader(orcState->filename);
+    /*filename, column number, maxRowPerBatch*/
+    initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
     //get colNum
     orcState->colNum = slot->tts_tupleDescriptor->natts;
 
@@ -468,10 +469,8 @@ fileIterateForeignScan(ForeignScanState *node)
 
     //start my simulation
     //char * nextLine = orcReadNextRow(orcState->file);
-    char * nextLine = getLine();
-    //fprintf(logfile, "%s", nextLine);
-    //fflush(logfile);
-
+    //char * nextLine = getLine();
+    char** nextTuple = getNextOrcTuple();
     //char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
 
     TupleDesc tupledes = slot->tts_tupleDescriptor;
@@ -494,7 +493,10 @@ fileIterateForeignScan(ForeignScanState *node)
     int i;
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
-        if(i==0) {//id = "12"
+        columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                        nextTuple[i], orcState->typioparams[i],
+                                        tupledes->attrs[i]->atttypmod);
+        /*if(i==0) {//id = "12"
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             "12", orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
@@ -503,7 +505,7 @@ fileIterateForeignScan(ForeignScanState *node)
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             nextLine, orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
-        }
+        }*/
 
         slot->tts_values[i] = columnValue;
     }
@@ -536,6 +538,7 @@ fileReScanForeignScan(ForeignScanState *node)
 static void
 fileEndForeignScan(ForeignScanState *node)
 {
+    releaseOrcBridgeMem();
     //FileFdwExecutionState *festate = (FileFdwExecutionState *) node->fdw_state;
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
 

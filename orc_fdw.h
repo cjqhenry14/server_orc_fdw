@@ -15,6 +15,7 @@
 #define OPTION_NAME_FILENAME "filename"
 
 #define ORC_TUPLE_COST_MULTIPLIER 10
+#define MAX_ROW_PER_BATCH 1000
 
 extern FILE * logfile;
 

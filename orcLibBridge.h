@@ -6,10 +6,11 @@
 extern "C"{
 #endif
 
-void initOrcReader(const char* filename);
+void initOrcReader(const char* filename, int fdwColNum, int fdwMaxRowPerBatch);
 
-char* getLine();
+char** getNextOrcTuple();
 
+void releaseOrcBridgeMem();
 
 #ifdef __cplusplus
 };
