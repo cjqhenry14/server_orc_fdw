@@ -496,7 +496,7 @@ fileIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        ss[0], orcState->typioparams[i],
+                                        nextTuple[i], orcState->typioparams[i],
                                         tupledes->attrs[i]->atttypmod);
        /* if(i==0) {//id = "12"
             columnValue = InputFunctionCall(&orcState->in_functions[i],
