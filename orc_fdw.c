@@ -417,11 +417,10 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     orcState = (OrcExeState *) palloc(sizeof(OrcExeState));
     orcState->filename = options->filename;
     //orcState->file = AllocateFile(orcState->filename, "r");
-    /*filename, column number, maxRowPerBatch*/
-    initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
     //get colNum
     orcState->colNum = slot->tts_tupleDescriptor->natts;
-
+/*filename, column number, maxRowPerBatch*/
+    initOrcReader(orcState->filename, 2, 1000);
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
     Oid			in_func_oid;
@@ -471,7 +470,9 @@ fileIterateForeignScan(ForeignScanState *node)
     //char * nextLine = orcReadNextRow(orcState->file);
     //char * nextLine = getLine();
     char** nextTuple = getNextOrcTuple();
-    //char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
+  if(nextTuple[0] == NULL)
+	return NULL;
+ char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
 
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
@@ -494,16 +495,16 @@ fileIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        nextTuple[i], orcState->typioparams[i],
+                                        ss[0], orcState->typioparams[i],
                                         tupledes->attrs[i]->atttypmod);
-        /*if(i==0) {//id = "12"
+       /* if(i==0) {//id = "12"
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             "12", orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
         }
         else {//cname = nextLine
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            nextLine, orcState->typioparams[i],
+                                            ss[1], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
         }*/
 
