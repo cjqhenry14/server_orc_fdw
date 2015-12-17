@@ -7,7 +7,7 @@
 extern "C"{
 #endif
 
-void initOrcReader(const char* filename, int fdwColNum, int fdwMaxRowPerBatch);
+void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch);
 
 bool getNextOrcTuple(char ** tuple);
 
