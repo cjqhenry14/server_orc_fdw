@@ -28,7 +28,7 @@ void initOrcReader(const char* filename) {
 
 unsigned long curRow=0;
 
-/*iteratively get one line record*/
+/*iteratively get one line record, for testing*/
 char* getLine() {
 
     line.clear();
@@ -61,26 +61,3 @@ char* getLine() {
         return p;
     }
 }
-
-
-
-void printContents(const char* filename) {
-    orc::ReaderOptions popts;
-    std::unique_ptr<orc::Reader> preader;
-    preader = orc::createReader(orc::readLocalFile(std::string(filename)), popts);
-
-    std::unique_ptr<orc::ColumnVectorBatch> pbatch = preader->createRowBatch(1000);
-    std::string pline;
-    std::unique_ptr<orc::ColumnPrinter> pprinter = createColumnPrinter(pline, preader->getType());
-
-    while (preader->next(*pbatch)) {
-        pprinter->reset(*pbatch);
-        for(unsigned long i=0; i < pbatch->numElements; ++i) {
-            pline.clear();
-            pprinter->printRow(i);
-            pline += "\n";
-            std::cout<<pline;
-        }
-    }
-}
-

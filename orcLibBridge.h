@@ -10,7 +10,6 @@ void initOrcReader(const char* filename);
 
 char* getLine();
 
-void printContents(const char* filename);
 
 #ifdef __cplusplus
 };
