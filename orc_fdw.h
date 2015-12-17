@@ -7,7 +7,7 @@
 
 #include "fmgr.h"
 
-#define MYLOGFILE "/home/mzhong/cjq/orc_fdw/mylog.txt"
+#define MYLOGFILE "/usr/pgsql-9.4/mylog.txt"
 #define SIM_ROWS 7
 #define SIM_PAGES 1
 

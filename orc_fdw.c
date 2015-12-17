@@ -44,7 +44,7 @@
 PG_MODULE_MAGIC;
 
 //cjq
-//FILE * logfile;
+FILE * logfile;
 
 /*
  * FDW-specific information for RelOptInfo.fdw_private.
@@ -393,7 +393,11 @@ static void
 fileBeginForeignScan(ForeignScanState *node, int eflags)
 {
     //cjq
-    //logfile = fopen(MYLOGFILE, "w");
+    logfile = fopen(MYLOGFILE, "w");
+
+    fprintf(logfile, "%d\n", 12);
+    fflush(logfile);
+    fclose(logfile);
 
     //ForeignScan *plan = (ForeignScan *) node->ss.ps.plan;
     OrcExeState *orcState;
@@ -529,7 +533,6 @@ fileReScanForeignScan(ForeignScanState *node)
 static void
 fileEndForeignScan(ForeignScanState *node)
 {
-
     //FileFdwExecutionState *festate = (FileFdwExecutionState *) node->fdw_state;
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
 
@@ -547,9 +550,6 @@ fileEndForeignScan(ForeignScanState *node)
     //}
 
     pfree(orcState);
-
-    //cjq
-    //fclose(logfile);
 }
 
 /*
