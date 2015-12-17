@@ -19,9 +19,9 @@
 #ifndef ORC_COLUMN_PRINTER_HH
 #define ORC_COLUMN_PRINTER_HH
 
-#include "orc/orc-config.hh"
-#include "orc/OrcFile.hh"
-#include "orc/Vector.hh"
+#include "orc-config.hh"
+#include "OrcFile.hh"
+#include "Vector.hh"
 
 #include <stdio.h>
 #include <string>
