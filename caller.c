@@ -1,16 +1,22 @@
 #include <stdio.h>
 #include "orcLibBridge.h"
+#include <stdlib.h>
 
 int main(int argc, char* argv[]) {
     initOrcReader("/usr/pgsql-9.4/city.orc", 2, 1000);
 
-    char** nextTuple = getNextOrcTuple();
-    while(nextTuple != NULL) {
-        //printNextTuple(nextTupe);
-        printf("%s, %s\n", nextTuple[0], nextTuple[1]);
-        nextTuple = getNextOrcTuple();
+
+    char **nextTuple = (char **)malloc(2 * sizeof(char *));
+    for (unsigned int i=0; i<2; i++)
+    {
+        nextTuple[i] = NULL;
     }
-    releaseOrcBridgeMem();
+
+    while(getNextOrcTuple(nextTuple)) {
+
+        printf("%s\n", nextTuple[1]);
+    }
+    releaseOrcBridgeMem(nextTuple);
 
     return 0;
 }

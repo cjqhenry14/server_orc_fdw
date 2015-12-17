@@ -23,26 +23,20 @@ std::unique_ptr<orc::ColumnVectorBatch> batch = reader->createRowBatch(maxRowPer
 std::unique_ptr<orc::ColumnPrinter> printer = createColumnPrinter(line, reader->getType());
 
 /*allocate memory space, and init with NULL ptr*/
-void initTuple() {
-    tuple = new char*[colNum];
-    for (int i=0; i<colNum; i++)
+void deleteTuple(char** tuple) {
+    for (unsigned int i=0; i<colNum; i++)
     {
-        tuple[i] = NULL;
-    }
-}
-
-void deleteTuple() {
-    for (int i=0; i<colNum; i++)
-    {
-        delete [] tuple[i];
+        if(tuple[i]!=NULL) {
+            delete[] tuple[i];
+        }
     }
     delete [] tuple;
 }
 
-void clearTuple() {
-    for (int i=0; i<colNum; i++)
+void clearTuple(char** tuple) {
+    for (unsigned int i=0; i<colNum; i++)
     {
-        if(tuple[i]!=NULL) {
+        if(tuple[i] != NULL) {
             delete [] tuple[i];
             tuple[i] = NULL;
         }
@@ -50,7 +44,7 @@ void clearTuple() {
 }
 
 void printNextTuple(char** nextTuple) {
-    for (int i=0; i<colNum; i++)
+    for (unsigned int i=0; i<colNum; i++)
     {
         if(nextTuple[i]!=NULL) {
             printf("%s,  ", nextTuple[i]);
@@ -59,10 +53,11 @@ void printNextTuple(char** nextTuple) {
     printf("\n");
 }
 
+
 /*For fdw: init tuple memory, and other global var, should be used in BeginForeignScan() */
-void initOrcReader(const char* filename, int fdwColNum, int fdwMaxRowPerBatch) {
+void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
     colNum = fdwColNum;
-    initTuple();
+    //initTuple(tuple);
     maxRowPerBatch = fdwMaxRowPerBatch;
 
     reader = orc::createReader(orc::readLocalFile(std::string(filename)), opts);
@@ -76,23 +71,11 @@ void initOrcReader(const char* filename, int fdwColNum, int fdwMaxRowPerBatch) {
 /*For fdw: iteratively get one line record, for using
  * return: NULL means no next record.
  * */
-char** getNextOrcTuple() {
-    char a[4] = "1";
-    char b[5] = "abcd";
-    char** p = new char*[2];
-    for (int i=0; i<2; i++)
-    {
-        p[i] = new char[18];
-    }
-    memcpy (p[0], a, strlen(a)+1);
-    memcpy (p[1], b, strlen(b)+1);
-    return p;
-
-
-    clearTuple();
+bool getNextOrcTuple(char ** tuple) {
+    clearTuple(tuple);
 
     if(batch->numElements == 0)
-        return NULL;
+        return false;
 
     if(curRow == batch->numElements) {
         if (reader->next(*batch)) {
@@ -100,28 +83,29 @@ char** getNextOrcTuple() {
             printer->reset(*batch);
 
             if(batch->numElements == 0)
-                return NULL;
+                return false;
 
             curRow = 0;
             /* my modified printRow(int rowId, char** tuple, int curColId) */
             printer->printRow(curRow, tuple, 0);
             curRow++;
 
-            return tuple;
+            return true;
         }
         else
-            return NULL;
+            return false;
     }
         /*curRow < batch->numElements*/
     else {
         printer->printRow(curRow, tuple, 0);
         curRow++;
-        return tuple;
+        return true;
     }
 }
 
 /*For fdw: release tuple memory, should be used in EndForeignScan() */
-void releaseOrcBridgeMem() {
-    deleteTuple();
+void releaseOrcBridgeMem(char **tuple) {
+    deleteTuple(tuple);
 }
+
 /* end server: for fdw wrapper functions*/

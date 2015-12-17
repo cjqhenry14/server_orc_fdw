@@ -8,9 +8,9 @@ extern "C"{
 
 void initOrcReader(const char* filename, int fdwColNum, int fdwMaxRowPerBatch);
 
-char** getNextOrcTuple();
+bool getNextOrcTuple(char ** tuple);
 
-void releaseOrcBridgeMem();
+void releaseOrcBridgeMem(char ** tuple);
 
 #ifdef __cplusplus
 };

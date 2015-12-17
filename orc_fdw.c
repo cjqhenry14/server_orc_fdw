@@ -44,6 +44,7 @@
 PG_MODULE_MAGIC;
 
 //cjq
+char** nextTuple;
 //FILE * logfile;
 
 //void *__gxx_personality_v0;
@@ -422,6 +423,11 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 /*filename, column number, maxRowPerBatch*/
     //initOrcReader(orcState->filename, 2, 1000);
     initOrcReader("/usr/pgsql-9.4/city.orc", 2, 1000);
+    nextTuple = (char **)malloc(2 * sizeof(char *));
+    for (unsigned int i=0; i<2; i++)
+    {
+        nextTuple[i] = NULL;
+    }
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
     Oid			in_func_oid;
@@ -470,7 +476,7 @@ fileIterateForeignScan(ForeignScanState *node)
     //start my simulation
     //char * nextLine = orcReadNextRow(orcState->file);
     //char * nextLine = getLine();
-    char** nextTuple = getNextOrcTuple();
+    getNextOrcTuple(nextTuple);
     if(nextTuple[0] == NULL)
 	   return NULL;
     char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
@@ -540,7 +546,7 @@ fileReScanForeignScan(ForeignScanState *node)
 static void
 fileEndForeignScan(ForeignScanState *node)
 {
-    releaseOrcBridgeMem();
+    releaseOrcBridgeMem(nextTuple);
     //FileFdwExecutionState *festate = (FileFdwExecutionState *) node->fdw_state;
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
 
