@@ -1,6 +1,7 @@
 
 #ifndef ORCLIBBRIDGE_H
 #define ORCLIBBRIDGE_H
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C"{

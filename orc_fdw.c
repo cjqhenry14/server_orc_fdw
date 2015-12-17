@@ -424,7 +424,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     //initOrcReader(orcState->filename, 2, 1000);
     initOrcReader("/usr/pgsql-9.4/city.orc", 2, 1000);
     nextTuple = (char **)malloc(2 * sizeof(char *));
-    for (unsigned int i=0; i<2; i++)
+    unsigned int i;
+    for (i=0; i<2; i++)
     {
         nextTuple[i] = NULL;
     }
@@ -433,7 +434,6 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     Oid			in_func_oid;
     Oid		   *typioparams = (Oid *) palloc(orcState->colNum * sizeof(Oid));
     Oid typeid;
-    int i;
     for(i = 0; i < orcState->colNum; i++) {
         typeid = slot->tts_tupleDescriptor->attrs[i]->atttypid;
         getTypeInputInfo(typeid, &in_func_oid, &typioparams[i]);
