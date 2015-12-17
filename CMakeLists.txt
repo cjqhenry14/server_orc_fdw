@@ -10,7 +10,7 @@ set(SOURCE_FILES
         orc_fdw.control
         Makefile
         orcLib/
-        orcInclude/)
+        orcInclude/ caller.c caller.h)
 
 include_directories(/Applications/Postgres.app/Contents/Versions/9.4//include/postgresql/server)
 

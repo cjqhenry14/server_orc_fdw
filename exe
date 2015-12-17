@@ -9,3 +9,8 @@ gcc -fPIC -std=c++11  -c orcLibBridge.cpp  -o orcLibBridge.o  -I orcInclude -L o
 ar rsc liborcLibBridge.a orcLibBridge.o
 
 sudo make USE_PGXS=1 install
+
+
+gcc  -c caller.c  -o caller.o
+
+gcc  -fPIC -std=c++11  -o caller caller.o  -I orcInclude -L. -lorcLibBridge -L  orcLib   -lorc -lgmock  -lsnappy -lz -lprotobuf -lm -lstdc++
