@@ -69,7 +69,7 @@ void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fd
 }
 
 /*For fdw: iteratively get one line record, for using
- * return: NULL means no next record.
+ * return: false means no next record.
  * */
 bool getNextOrcTuple(char ** tuple) {
     clearTuple(tuple);
