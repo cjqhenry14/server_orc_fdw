@@ -419,9 +419,11 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //get colNum
     orcState->colNum = slot->tts_tupleDescriptor->natts;
-    /*filename, column number, maxRowPerBatch*/
+
+    /*init orc reader (filename, column number, maxRowPerBatch) */
     initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
     orcState->nextTuple = (char **)malloc(2 * sizeof(char *));
+
     unsigned int i;
     for (i=0; i<orcState->colNum; i++)
     {
@@ -449,8 +451,6 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
  *		Read next record from the data file and store it into the
  *		ScanTupleSlot as a virtual tuple
  */
-static int count = 0;
-
 static TupleTableSlot *
 fileIterateForeignScan(ForeignScanState *node)
 {
@@ -472,20 +472,18 @@ fileIterateForeignScan(ForeignScanState *node)
     ExecClearTuple(slot);
 
     //start my simulation
-    //char * nextLine = orcReadNextRow(orcState->file);
-    //char * nextLine = getLine();
-    getNextOrcTuple(orcState->nextTuple);
-
     //char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
 
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
+
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
     /* initialize all values for this row to null */
     memset(columnValues, 0, colNum * sizeof(Datum));
 
-    if(count < 3) {
+    /*has next tuple*/
+    if(getNextOrcTuple(orcState->nextTuple)) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -504,8 +502,6 @@ fileIterateForeignScan(ForeignScanState *node)
 
         slot->tts_values[i] = columnValue;
     }
-
-    count++;
     //end my simulation
 
     if (found)
