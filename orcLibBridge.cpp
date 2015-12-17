@@ -77,6 +77,18 @@ void initOrcReader(const char* filename, int fdwColNum, int fdwMaxRowPerBatch) {
  * return: NULL means no next record.
  * */
 char** getNextOrcTuple() {
+    char a[4] = "1";
+    char b[5] = "abcd";
+    char** p = new char*[2];
+    for (int i=0; i<2; i++)
+    {
+        p[i] = new char[18];
+    }
+    memcpy (p[0], a, strlen(a)+1);
+    memcpy (p[1], b, strlen(b)+1);
+    return p;
+
+
     clearTuple();
 
     if(batch->numElements == 0)

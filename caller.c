@@ -4,11 +4,11 @@
 int main(int argc, char* argv[]) {
     initOrcReader("/usr/pgsql-9.4/city.orc", 2, 1000);
 
-    char** nextTupe = getNextOrcTuple();
-    while(nextTupe != NULL) {
+    char** nextTuple = getNextOrcTuple();
+    while(nextTuple != NULL) {
         //printNextTuple(nextTupe);
-        printf("%s, %s\n", nextTupe[0], nextTupe[1]);
-        nextTupe = getNextOrcTuple();
+        printf("%s, %s\n", nextTuple[0], nextTuple[1]);
+        nextTuple = getNextOrcTuple();
     }
     releaseOrcBridgeMem();
 
