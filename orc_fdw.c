@@ -420,7 +420,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     //get colNum
     orcState->colNum = slot->tts_tupleDescriptor->natts;
 /*filename, column number, maxRowPerBatch*/
-    initOrcReader(orcState->filename, 2, 1000);
+    //initOrcReader(orcState->filename, 2, 1000);
+    initOrcReader("/usr/pgsql-9.4/city.orc", 2, 1000);
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
     Oid			in_func_oid;
@@ -470,9 +471,9 @@ fileIterateForeignScan(ForeignScanState *node)
     //char * nextLine = orcReadNextRow(orcState->file);
     //char * nextLine = getLine();
     char** nextTuple = getNextOrcTuple();
-  if(nextTuple[0] == NULL)
-	return NULL;
- char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
+    if(nextTuple[0] == NULL)
+	   return NULL;
+    char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
 
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
