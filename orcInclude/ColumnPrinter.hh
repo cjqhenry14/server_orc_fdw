@@ -19,9 +19,9 @@
 #ifndef ORC_COLUMN_PRINTER_HH
 #define ORC_COLUMN_PRINTER_HH
 
-#include "orc-config.hh"
-#include "OrcFile.hh"
-#include "Vector.hh"
+#include "orc/orc-config.hh"
+#include "orc/OrcFile.hh"
+#include "orc/Vector.hh"
 
 #include <stdio.h>
 #include <string>
@@ -32,21 +32,20 @@
 namespace orc {
 
   class ColumnPrinter {
-  protected:
+    protected:
     std::string &buffer;
     const Type& type;
     bool hasNulls ;
     const char* notNull;
 
-  public:
+    public:
     ColumnPrinter(std::string&, const Type&);
     virtual ~ColumnPrinter();
-    virtual void printRow(uint64_t rowId) = 0;
-    // should be called once at the start of each batch of rows
+    virtual void printRow(uint64_t rowId, char** tuple, unsigned int curColId) = 0;
+    /* should be called once at the start of each batch of rows*/
     virtual void reset(const ColumnVectorBatch& batch);
   };
 
-  ORC_UNIQUE_PTR<ColumnPrinter> createColumnPrinter(std::string&,
-						    const Type& type);
+  ORC_UNIQUE_PTR<ColumnPrinter> createColumnPrinter(std::string&, const Type& type);
 }
 #endif
