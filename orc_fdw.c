@@ -567,6 +567,7 @@ fileIterateForeignScan(ForeignScanState *node)
 static void
 fileReScanForeignScan(ForeignScanState *node)
 {
+    count = 0;
     fileEndForeignScan(node);
     fileBeginForeignScan(node, 0);
 }
