@@ -118,8 +118,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -422,7 +422,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     orcState->colNum = slot->tts_tupleDescriptor->natts;
 
     /*init orc reader (filename, column number, maxRowPerBatch) */
-   ////initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
+    initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
     orcState->nextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     unsigned int i;
@@ -595,7 +595,7 @@ fileEndForeignScan(ForeignScanState *node)
         FreeFile(orcState->file);
     }*/
 
-    pfree(orcState);
+    //pfree(orcState);
 }
 
 /*
