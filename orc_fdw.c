@@ -475,7 +475,6 @@ fileIterateForeignScan(ForeignScanState *node)
      */
     ExecClearTuple(slot);
 
-    //start my simulation
     //char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
 
     TupleDesc tupledes = slot->tts_tupleDescriptor;
@@ -500,17 +499,20 @@ fileIterateForeignScan(ForeignScanState *node)
     int i;
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
-        columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        orcState->nextTuple[i], orcState->typioparams[i],
-                                        tupledes->attrs[i]->atttypmod);
+        if(orcState->nextTuple[i] != NULL) {
+            columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                            orcState->nextTuple[i], orcState->typioparams[i],
+                                            tupledes->attrs[i]->atttypmod);
+        }
+        else {
+            slot->tts_isnull[i] = true;
+        }
 
         slot->tts_values[i] = columnValue;
     }
-    //end my simulation
 
     if (found)
         ExecStoreVirtualTuple(slot);
-    //ExecStoreTuple 是存的物理的tuple, 很多fdw是这么干的
 
     return slot;
 }
