@@ -512,7 +512,9 @@ fileIterateForeignScan(ForeignScanState *node)
     }
     /*test null*/
     if(strcmp(orcState->nextTuple[1], "bb") == 0) {
-        slot->tts_values[1] = "cccc";
+        slot->tts_values[1] = InputFunctionCall(&orcState->in_functions[i],
+        "ccccc", orcState->typioparams[i],
+                tupledes->attrs[i]->atttypmod);
         //slot->tts_isnull[1] = true;
     }
 
