@@ -3,7 +3,8 @@
 #include <stdlib.h>
 
 void printNextTuple(char** nextTuple, int colNum) {
-    for (unsigned int i=0; i<colNum; i++)
+    unsigned int i; 
+    for (i=0; i<colNum; i++)
     {
         if(nextTuple[i]!=NULL) {
             printf("%s,  ", nextTuple[i]);
