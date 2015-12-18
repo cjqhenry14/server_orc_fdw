@@ -426,7 +426,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     /*init orc reader (filename, column number, maxRowPerBatch) */
     initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
-    orcState->nextTuple = (char **)malloc(2 * sizeof(char *));
+    orcState->nextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     unsigned int i;
     for (i=0; i<orcState->colNum; i++)
