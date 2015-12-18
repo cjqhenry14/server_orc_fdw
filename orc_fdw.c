@@ -512,7 +512,7 @@ fileIterateForeignScan(ForeignScanState *node)
         /*test null*/
         if(i==1) {
             slot->tts_isnull[i] = true;
-            slot->tts_values[i] = 0;
+            //slot->tts_values[i] = 0;
         }
     }
 
