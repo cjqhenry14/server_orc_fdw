@@ -510,7 +510,7 @@ fileIterateForeignScan(ForeignScanState *node)
 
         slot->tts_values[i] = columnValue;
         /*test null*/
-        if(i==1) {
+        if(strcmp(orcState->nextTuple[i], "bb") == 0) {
             slot->tts_isnull[i] = true;
             //slot->tts_values[i] = 0;
         }
