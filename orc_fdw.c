@@ -44,7 +44,7 @@
 PG_MODULE_MAGIC;
 
 //cjq
-FILE * logfile;
+//FILE * logfile;
 
 /*
  * FDW-specific information for RelOptInfo.fdw_private.
@@ -393,11 +393,11 @@ static void
 fileBeginForeignScan(ForeignScanState *node, int eflags)
 {
     //cjq
-    logfile = fopen(MYLOGFILE, "w");
+    //logfile = fopen(MYLOGFILE, "w");
 
-    fprintf(logfile, "%d\n", 12);
-    fflush(logfile);
-    fclose(logfile);
+    //fprintf(logfile, "%d\n", 12);
+    //fflush(logfile);
+    //fclose(logfile);
 
     //ForeignScan *plan = (ForeignScan *) node->ss.ps.plan;
     OrcExeState *orcState;
