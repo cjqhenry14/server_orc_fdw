@@ -510,6 +510,9 @@ fileIterateForeignScan(ForeignScanState *node)
 
         slot->tts_values[i] = columnValue;
     }
+    /*test null*/
+    if(strcmp(orcState->nextTuple[1], "bb") == 0)
+        slot->tts_isnull[1] = true;
 
     if (found)
         ExecStoreVirtualTuple(slot);
