@@ -548,13 +548,13 @@ fileEndForeignScan(ForeignScanState *node)
         return;
     }
 
-    releaseOrcBridgeMem(orcState->nextTuple);
     /*TODO: clears all file related memory */
+    releaseOrcBridgeMem(orcState->nextTuple);
 
-    //if (orcState->file)
-    //{
-       // FreeFile(orcState->file);
-    //}
+    if (orcState->file)
+    {
+        FreeFile(orcState->file);
+    }
 
     pfree(orcState);
 }
