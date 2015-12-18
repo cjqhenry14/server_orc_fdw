@@ -102,7 +102,7 @@ static char * OrcGetOptionValue(Oid foreignTableId, const char *optionName);
 
 static List * ColumnList(RelOptInfo *baserel);
 
-
+static TupleTableSlot *simIterateForeignScan(ForeignScanState *node);
 
 /*
  * Foreign-data wrapper handler function: return a struct with pointers
