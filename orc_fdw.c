@@ -509,13 +509,11 @@ fileIterateForeignScan(ForeignScanState *node)
         }
 
         slot->tts_values[i] = columnValue;
-    }
-    /*test null*/
-    if(strcmp(orcState->nextTuple[1], "bb") == 0) {
-        slot->tts_values[1] = InputFunctionCall(&orcState->in_functions[1],
-        "ccccc", orcState->typioparams[1],
-                tupledes->attrs[1]->atttypmod);
-        //slot->tts_isnull[1] = true;
+        /*test null*/
+        if(i==1) {
+            slot->tts_isnull[i] = true;
+            slot->tts_values[i] = 0;
+        }
     }
 
     if (found)
