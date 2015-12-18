@@ -512,7 +512,7 @@ fileIterateForeignScan(ForeignScanState *node)
     }
     /*test null*/
     if(strcmp(orcState->nextTuple[1], "bb") == 0) {
-        slot->tts_values[i] = 0;
+        slot->tts_values[1] = 0;
         slot->tts_isnull[1] = true;
     }
 
