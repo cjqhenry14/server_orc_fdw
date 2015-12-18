@@ -1,3 +1,5 @@
+metastore_db/
+derby.log
 .idea/
 *.o
 *.so
