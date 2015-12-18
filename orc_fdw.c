@@ -95,10 +95,6 @@ static bool fileAnalyzeForeignTable(Relation relation,
  * Helper functions
  */
 
-static int file_acquire_sample_rows(Relation onerel, int elevel,
-                                    HeapTuple *rows, int targrows,
-                                    double *totalrows, double *totaldeadrows);
-
 static OrcFdwOptions * OrcGetOptions(Oid foreignTableId);
 
 static char * OrcGetOptionValue(Oid foreignTableId, const char *optionName);
@@ -125,7 +121,7 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->IterateForeignScan = fileIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
-    fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;
+    fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
 
     PG_RETURN_POINTER(fdwroutine);
 }
@@ -551,10 +547,10 @@ fileEndForeignScan(ForeignScanState *node)
     /*TODO: clears all file related memory */
     releaseOrcBridgeMem(orcState->nextTuple);
 
-    if (orcState->file)
+    /*if (orcState->file)
     {
         FreeFile(orcState->file);
-    }
+    }*/
 
     pfree(orcState);
 }
@@ -568,202 +564,9 @@ fileAnalyzeForeignTable(Relation relation,
                         AcquireSampleRowsFunc *func,
                         BlockNumber *totalpages)
 {
-    struct stat stat_buf;
-    Oid foreignTableId = RelationGetRelid(relation);
-    OrcFdwOptions *options = OrcGetOptions(foreignTableId);
-
-    /*
-     * Get size of the file.  (XXX if we fail here, would it be better to just
-     * return false to skip analyzing the table?)
-     */
-    int statResult = stat(options->filename, &stat_buf);
-    if (statResult < 0)
-    {
-        ereport(ERROR,
-                (errcode_for_file_access(), errmsg("could not stat file \"%s\": %m", options->filename)));
-    }
-
-    /*
-     * Convert size to pages.  Must return at least 1 so that we can tell
-     * later on that pg_class.relpages is not default.
-     */
-    *totalpages = (stat_buf.st_size + (BLCKSZ - 1)) / BLCKSZ;
-    if (*totalpages < 1)
-        *totalpages = 1;
-
-    *func = file_acquire_sample_rows;
-
-    return true;
+    return false;
 }
 
-/*
- * OrcAcquireSampleRows acquires a random sample of rows from the foreign
- * table. Selected rows are returned in the caller allocated sampleRows array,
- * which must have at least target row count entries. The actual number of rows
- * selected is returned as the function result. We also count the number of rows
- * in the collection and return it in total row count. We also always set dead
- * row count to zero.
- *
- * Note that the returned list of rows does not always follow their actual order
- * in the Orc file. Therefore, correlation estimates derived later could be
- * inaccurate, but that's OK. We currently don't use correlation estimates (the
- * planner only pays attention to correlation for index scans).
- */
-static int
-file_acquire_sample_rows(Relation relation, int logLevel, HeapTuple *sampleRows,
-                     int targetRowCount, double *totalRowCount, double *totalDeadRowCount)
-{
-    int sampleRowCount = 0;
-    double rowCount = 0.0;
-    double rowCountToSkip = -1; /* -1 means not set yet */
-    double selectionState = 0;
-    MemoryContext oldContext = CurrentMemoryContext;
-    MemoryContext tupleContext = NULL;
-    Datum *columnValues = NULL;
-    bool *columnNulls = NULL;
-    TupleTableSlot *scanTupleSlot = NULL;
-    List *columnList = NIL;
-    List *opExpressionList = NIL;
-    List *foreignPrivateList = NULL;
-    ForeignScanState *scanState = NULL;
-    ForeignScan *foreignScan = NULL;
-    char *relationName = NULL;
-    int executorFlags = 0;
-
-    TupleDesc tupleDescriptor = RelationGetDescr(relation);
-    int columnCount = tupleDescriptor->natts;
-    Form_pg_attribute *attributes = tupleDescriptor->attrs;
-
-    /* create list of columns of the relation */
-    int columnIndex = 0;
-    for (columnIndex = 0; columnIndex < columnCount; columnIndex++)
-    {
-        Var *column = (Var *) palloc0(sizeof(Var));
-
-        /* only assign required fields for column mapping hash */
-        column->varattno = columnIndex + 1;
-        column->vartype = attributes[columnIndex]->atttypid;
-        column->vartypmod = attributes[columnIndex]->atttypmod;
-
-        columnList = lappend(columnList, column);
-    }
-
-    /* setup foreign scan plan node */
-    // TODO is giving an empty expression list ok?
-    foreignPrivateList = list_make2(columnList,opExpressionList);
-    foreignScan = makeNode(ForeignScan);
-    foreignScan->fdw_private = foreignPrivateList;
-
-    /* set up tuple slot */
-    columnValues = (Datum *) palloc0(columnCount * sizeof(Datum));
-    columnNulls = (bool *) palloc0(columnCount * sizeof(bool));
-    scanTupleSlot = MakeTupleTableSlot();
-    scanTupleSlot->tts_tupleDescriptor = tupleDescriptor;
-    scanTupleSlot->tts_values = columnValues;
-    scanTupleSlot->tts_isnull = columnNulls;
-
-    /* setup scan state */
-    scanState = makeNode(ForeignScanState);
-    scanState->ss.ss_currentRelation = relation;
-    scanState->ss.ps.plan = (Plan *) foreignScan;
-    scanState->ss.ss_ScanTupleSlot = scanTupleSlot;
-
-    fileBeginForeignScan(scanState, executorFlags);
-
-    /*
-     * Use per-tuple memory context to prevent leak of memory used to read and
-     * parse rows from the file using ReadLineFromFile and FillTupleSlot.
-     */
-    tupleContext = AllocSetContextCreate(CurrentMemoryContext, "orc_fdw temporary context",
-                                         ALLOCSET_DEFAULT_MINSIZE,
-                                         ALLOCSET_DEFAULT_INITSIZE,
-                                         ALLOCSET_DEFAULT_MAXSIZE);
-
-    /* prepare for sampling rows */
-    selectionState = anl_init_selection_state(targetRowCount);
-
-    for (;;)
-    {
-        /* check for user-requested abort or sleep */
-        vacuum_delay_point();
-
-        memset(columnValues, 0, columnCount * sizeof(Datum));
-        memset(columnNulls, true, columnCount * sizeof(bool));
-
-        MemoryContextReset(tupleContext);
-        MemoryContextSwitchTo(tupleContext);
-
-        /* read the next record */
-        fileIterateForeignScan(scanState);
-
-        MemoryContextSwitchTo(oldContext);
-
-        /* if there are no more records to read, break */
-        if (scanTupleSlot->tts_isempty)
-        {
-            break;
-        }
-
-        /*
-         * The first targetRowCount sample rows are simply copied into the
-         * reservoir. Then we start replacing tuples in the sample until we
-         * reach the end of the relation. This algorithm is from Jeff Vitter's
-         * paper (see more info in commands/analyze.c).
-         */
-        if (sampleRowCount < targetRowCount)
-        {
-            sampleRows[sampleRowCount++] = heap_form_tuple(tupleDescriptor, columnValues,
-                                                           columnNulls);
-        }
-        else
-        {
-            /*
-             * t in Vitter's paper is the number of records already processed.
-             * If we need to compute a new S value, we must use the "not yet
-             * incremented" value of rowCount as t.
-             */
-            if (rowCountToSkip < 0)
-            {
-                rowCountToSkip = anl_get_next_S(rowCount, targetRowCount, &selectionState);
-            }
-
-            if (rowCountToSkip <= 0)
-            {
-                /*
-                 * Found a suitable tuple, so save it, replacing one old tuple
-                 * at random.
-                 */
-                int rowIndex = (int) (targetRowCount * anl_random_fract());
-                Assert(rowIndex >= 0);
-                Assert(rowIndex < targetRowCount);
-
-                heap_freetuple(sampleRows[rowIndex]);
-                sampleRows[rowIndex] = heap_form_tuple(tupleDescriptor, columnValues, columnNulls);
-            }
-
-            rowCountToSkip -= 1;
-        }
-
-        rowCount += 1;
-    }
-
-    /* clean up */
-    MemoryContextDelete(tupleContext);
-    pfree(columnValues);
-    pfree(columnNulls);
-
-    fileEndForeignScan(scanState);
-
-    /* emit some interesting relation info */
-    relationName = RelationGetRelationName(relation);
-    ereport(logLevel,
-            (errmsg("\"%s\": file contains %.0f rows; %d rows in sample", relationName, rowCount, sampleRowCount)));
-
-    (*totalRowCount) = rowCount;
-    (*totalDeadRowCount) = 0;
-
-    return sampleRowCount;
-}
 
 /*
  * ColumnList takes in the planner's information about this foreign table. The
