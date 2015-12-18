@@ -8,7 +8,6 @@
 
 
 /*global variable*/
-char** tuple;
 unsigned int colNum = 0;
 unsigned int maxRowPerBatch = 1000;
 std::string line;

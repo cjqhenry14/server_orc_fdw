@@ -118,7 +118,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -421,7 +422,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     orcState->colNum = slot->tts_tupleDescriptor->natts;
 
     /*init orc reader (filename, column number, maxRowPerBatch) */
-    initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
+   ////initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
     orcState->nextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     unsigned int i;
@@ -445,6 +446,52 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     node->fdw_state = (void *) orcState;
 }
+
+int count = 0;
+static TupleTableSlot *
+simIterateForeignScan(ForeignScanState *node)
+{
+    OrcExeState *orcState = (OrcExeState *) node->fdw_state;
+    TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
+    bool		found;
+
+    ExecClearTuple(slot);
+
+    char *ss[5]= {"1", "mike", "NY", "100.23", "2013-01-01"};
+    TupleDesc tupledes = slot->tts_tupleDescriptor;
+    int colNum = tupledes->natts;
+
+    Datum *columnValues = slot->tts_values;
+    bool *columnNulls = slot->tts_isnull;
+    /* initialize all values for this row to null */
+    memset(columnValues, 0, colNum * sizeof(Datum));
+
+    count++;
+    if(count < 7) {
+        memset(columnNulls, false, colNum * sizeof(bool));
+        found = true;
+    }
+    else {
+        found = false;
+        memset(columnNulls, true, colNum * sizeof(bool));
+    }
+
+    int i;
+    for(i = 0; i < colNum; i++) {
+        Datum columnValue = 0;
+        columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                            ss[i], orcState->typioparams[i],
+                                            tupledes->attrs[i]->atttypmod);
+
+        slot->tts_values[i] = columnValue;
+    }
+
+    if (found)
+        ExecStoreVirtualTuple(slot);
+
+    return slot;
+}
+
 
 /*
  * fileIterateForeignScan
@@ -505,11 +552,6 @@ fileIterateForeignScan(ForeignScanState *node)
         }
 
         slot->tts_values[i] = columnValue;
-        /*test null*/
-        /*if(strcmp(orcState->nextTuple[i], "bb") == 0) {
-            slot->tts_isnull[i] = true;
-            //slot->tts_values[i] = 0;
-        }*/
     }
 
     if (found)
