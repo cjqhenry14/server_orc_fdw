@@ -567,7 +567,6 @@ fileIterateForeignScan(ForeignScanState *node)
 static void
 fileReScanForeignScan(ForeignScanState *node)
 {
-    count = 0;
     fileEndForeignScan(node);
     fileBeginForeignScan(node, 0);
 }
@@ -579,6 +578,7 @@ fileReScanForeignScan(ForeignScanState *node)
 static void
 fileEndForeignScan(ForeignScanState *node)
 {
+    count = 0;
     //FileFdwExecutionState *festate = (FileFdwExecutionState *) node->fdw_state;
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
 
