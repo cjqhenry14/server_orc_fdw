@@ -2,11 +2,6 @@
 #define ORCLIBBRIDGE_H
 #include <stdbool.h>
 
-#ifndef _UINT64_T
-#define _UINT64_T
-typedef unsigned long long uint64_t;
-#endif /* _UINT64_T */
-
 #ifdef __cplusplus
 extern "C"{
 #endif
@@ -30,7 +25,7 @@ void releaseOrcBridgeMem(char ** tuple);
  * Get the number of rows in the file.
  * @return the number of rows
  */
-uint64_t getOrcTupleCount(const char* filename);
+unsigned long long getOrcTupleCount(const char* filename);
 
 
 #ifdef __cplusplus

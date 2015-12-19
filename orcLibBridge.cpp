@@ -87,7 +87,7 @@ void releaseOrcBridgeMem(char **tuple) {
  * Get the number of rows in the file.
  * @return the number of rows
  */
-uint64_t getOrcTupleCount(const char* filename) {
+unsigned long long getOrcTupleCount(const char* filename) {
     orc::ReaderOptions gtc_opts;
     std::unique_ptr<orc::Reader> gtc_reader;
     gtc_reader = orc::createReader(orc::readLocalFile(std::string(filename)), gtc_opts);
