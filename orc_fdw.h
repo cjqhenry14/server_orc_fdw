@@ -18,6 +18,11 @@
 #define MAX_ROW_PER_BATCH 1000
 
 extern FILE * logfile;
+/*actualTotalRowCount is stored as global var, avoid repeat computing
+ * can't be stored in OrcFdwOptions: because only can be used if baserel is provided
+ * can't be stored in OrcExeState: because OrcExeState is init in BeginForeignScan
+ * So, set as global var*/
+uint64 actualTotalRowCount;
 
 /*
  * OrcValidOption keeps an option name and a context. When an option is passed
@@ -40,7 +45,8 @@ static const OrcValidOption ValidOptionArray[] =
                 //may add more in the fututre, compressionType etc.
         };
 
-
+/* initialized in fileGetForeignRelSize, stored as baserel->fdw_private = (void *) OrcFdwOptions;
+ * can be used only parameters has RelOptInfo *baserel*/
 typedef struct OrcFdwOptions
 {
     char *filename;
@@ -50,6 +56,7 @@ typedef struct OrcFdwOptions
     //uint32 blockRowCount;
 } OrcFdwOptions;
 
+/* initialized in BeginForeignScan, stored as node->fdw_state = (void *) orcState; */
 typedef struct OrcExeState
 {
     //basic

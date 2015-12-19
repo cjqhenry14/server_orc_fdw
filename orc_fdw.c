@@ -46,17 +46,6 @@ PG_MODULE_MAGIC;
 //FILE * logfile;
 
 /*
- * FDW-specific information for RelOptInfo.fdw_private.
- */
-typedef struct FileFdwPlanState
-{
-    char	   *filename;		/* file to read */
-    List	   *options;		/* merged COPY options, excluding filename */
-    BlockNumber pages;			/* estimate of file's physical size */
-    double		ntuples;		/* estimate of number of rows in file */
-} FileFdwPlanState;
-
-/*
  * SQL functions
  */
 PG_FUNCTION_INFO_V1(orc_fdw_handler);
@@ -221,6 +210,7 @@ OrcGetOptionValue(Oid foreignTableId, const char *optionName)
 /*
  * OrcGetOptions returns the option values to be used when reading and parsing
  * the orc file.
+ * first and only used in fileGetForeignRelSize, after that, use
  */
 static OrcFdwOptions *
 OrcGetOptions(Oid foreignTableId)
@@ -246,9 +236,17 @@ fileGetForeignRelSize(PlannerInfo *root,
                       Oid foreigntableid)
 {
     OrcFdwOptions *options = OrcGetOptions(foreigntableid);
+    /* OrcFdwOptions is stored as baserel->fdw_private for future use
+     * OrcFdwOptions *options = (OrcFdwOptions *) node->fdw_private; */
+    baserel->fdw_private = (void *) options;
 
     /* Estimate relation size */
-    double tupleCount = (double) getOrcTupleCount(options->filename);
+    /*actualTotalRowCount is stored as global var, avoid repeat computing
+     * can't be stored in OrcFdwOptions: because only can be used if baserel is provided*/
+    actualTotalRowCount = getOrcTupleCount(options->filename);
+
+    double tupleCount = (double) actualTotalRowCount;
+
     double rowSelectivity = clauselist_selectivity(root, baserel->baserestrictinfo, 0, JOIN_INNER,
                                                    NULL);
 
@@ -270,10 +268,9 @@ fileGetForeignPaths(PlannerInfo *root,
                     Oid foreigntableid)
 {
     Path *foreignScanPath = NULL;
-    //OrcFdwOptions *options = OrcGetOptions(foreigntableid);
 
     BlockNumber pageCount = SIM_PAGES;
-    double tupleCount = SIM_ROWS;
+    double tupleCount = (double) actualTotalRowCount;
 
     /*
      * We estimate costs almost the same way as cost_seqscan(), thus assuming
@@ -359,17 +356,16 @@ fileExplainForeignScan(ForeignScanState *node, ExplainState *es)
     /* Fetch options --- we only need filename at this point */
     Oid foreignTableId = RelationGetRelid(node->ss.ss_currentRelation);
     OrcFdwOptions *options = OrcGetOptions(foreignTableId);
-
     ExplainPropertyText("Orc File", options->filename, es);
 
     /* Suppress file size if we're not showing cost details */
-    if (es->costs)
+    /*if (es->costs)
     {
         struct stat stat_buf;
 
         if (stat(options->filename, &stat_buf) == 0)
             ExplainPropertyLong("Orc File Size", (long) stat_buf.st_size, es);
-    }
+    }*/
 }
 
 /*
@@ -567,7 +563,6 @@ static void
 fileEndForeignScan(ForeignScanState *node)
 {
     count = 0;
-    //FileFdwExecutionState *festate = (FileFdwExecutionState *) node->fdw_state;
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
 
     /* if festate is NULL, we are in EXPLAIN; nothing to do */
