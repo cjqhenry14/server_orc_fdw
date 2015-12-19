@@ -17,7 +17,8 @@ char fakefilename[50] = "/usr/pgsql-9.4/city.orc";
 
 orc::ReaderOptions opts;
 /*init first, avoid init with abstract obj. Then change in initOrcReader()*/
-std::unique_ptr<orc::Reader> reader = orc::createReader(orc::readLocalFile(std::string(fakefilename)), opts);
+//std::unique_ptr<orc::Reader> reader = orc::createReader(orc::readLocalFile(std::string(fakefilename)), opts);
+std::unique_ptr<orc::Reader> reader;
 std::unique_ptr<orc::ColumnVectorBatch> batch = reader->createRowBatch(maxRowPerBatch);
 std::unique_ptr<orc::ColumnPrinter> printer = createColumnPrinter(line, reader->getType());
 
