@@ -55,8 +55,7 @@ void printNextTuple(char** nextTuple) {
 /*For fdw: init tuple memory, and other global var, should be used in BeginForeignScan() */
 void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
     colNum = fdwColNum;
-    curRow = 0;
-    //initTuple(tuple);
+    curRow = 0;//don't forget
     maxRowPerBatch = fdwMaxRowPerBatch;
 
     reader = orc::createReader(orc::readLocalFile(std::string(filename)), opts);
