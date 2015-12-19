@@ -269,22 +269,35 @@ fileGetForeignPaths(PlannerInfo *root,
 {
     Path *foreignScanPath = NULL;
 
-    BlockNumber pageCount = SIM_PAGES;
-    double tupleCount = (double) actualTotalRowCount;
-
     /*
      * We estimate costs almost the same way as cost_seqscan(), thus assuming
      * that I/O costs are equivalent to a regular table file of the same size.
      * However, we take per-tuple CPU costs as 10x of a seqscan to account for
      * the cost of parsing records.
      */
-    double tupleParseCost = cpu_tuple_cost * ORC_TUPLE_COST_MULTIPLIER;
-    double tupleFilterCost = baserel->baserestrictcost.per_tuple;
-    double cpuCostPerTuple = tupleParseCost + tupleFilterCost;
-    double executionCost = (seq_page_cost * pageCount) + (cpuCostPerTuple * tupleCount);
+    List *queryColumnList = ColumnList(baserel);
+    uint32 queryColumnCount = (uint32)list_length(queryColumnList);
+    //TODO: can't get page count!!!
+    BlockNumber relationPageCount = SIM_PAGES;
+    Relation relation = heap_open(foreigntableid, AccessShareLock);
+    uint32 relationColumnCount = (uint32) RelationGetNumberOfAttributes(relation);
+
+    double queryColumnRatio = (double) queryColumnCount / relationColumnCount;
+    double queryPageCount = relationPageCount * queryColumnRatio;
+    double totalDiskAccessCost = seq_page_cost * queryPageCount;
+
+    double tupleCountEstimate = (double) actualTotalRowCount;
+
+    /*
+     * We estimate costs almost the same way as cost_seqscan(), thus assuming
+     * that I/O costs are equivalent to a regular table file of the same size.
+     */
+    double filterCostPerTuple = baserel->baserestrictcost.per_tuple;
+    double cpuCostPerTuple = cpu_tuple_cost + filterCostPerTuple;
+    double totalCpuCost = cpuCostPerTuple * tupleCountEstimate;
 
     double startupCost = baserel->baserestrictcost.startup;
-    double totalCost = startupCost + executionCost;
+    double totalCost  = startupCost + totalCpuCost + totalDiskAccessCost;
 
     /* create a foreign path node and add it as the only possible path */
     foreignScanPath = (Path *) create_foreignscan_path(root, baserel, baserel->rows, startupCost,
@@ -294,6 +307,7 @@ fileGetForeignPaths(PlannerInfo *root,
                                                        NIL); /* no fdw_private */
 
     add_path(baserel, foreignScanPath);
+    heap_close(relation, AccessShareLock);
 }
 
 /*
