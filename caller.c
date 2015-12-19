@@ -13,7 +13,7 @@ void printNextTuple(char** nextTuple, int colNum) {
     printf("\n");
 }
 
-int main(int argc, char* argv[]) {
+void simIterativeScan() {
     unsigned int i;
     unsigned int colNum = 5;
     initOrcReader("/usr/pgsql-9.4/test_data1.orc", 5, 1000);
@@ -27,6 +27,14 @@ int main(int argc, char* argv[]) {
         printNextTuple(nextTuple, colNum);
     }
     releaseOrcBridgeMem(nextTuple);
+}
 
+void simGetTupleCount() {
+    printf("row: %lu,  ", getOrcTupleCount("/usr/pgsql-9.4/test_data1.orc"));
+}
+
+int main(int argc, char* argv[]) {
+
+    simGetTupleCount();
     return 0;
 }
