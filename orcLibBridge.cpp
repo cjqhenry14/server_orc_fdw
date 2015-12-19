@@ -12,6 +12,7 @@ unsigned int maxRowPerBatch = 1000;
 std::string line;
 unsigned long curRow;
 
+/*only use for init, the real filename will be passed from orc_fdw*/
 char fakefilename[50] = "/usr/pgsql-9.4/city.orc";
 
 orc::ReaderOptions opts;
@@ -20,39 +21,15 @@ std::unique_ptr<orc::Reader> reader = orc::createReader(orc::readLocalFile(std::
 std::unique_ptr<orc::ColumnVectorBatch> batch = reader->createRowBatch(maxRowPerBatch);
 std::unique_ptr<orc::ColumnPrinter> printer = createColumnPrinter(line, reader->getType());
 
-/*allocate memory space, and init with NULL ptr*/
-void deleteTuple(char** tuple) {
-    for (unsigned int i=0; i<colNum; i++)
-    {
-        if(tuple[i]!=NULL) {
-            delete[] tuple[i];
-        }
-    }
-    delete [] tuple;
-}
-
-void clearTuple(char** tuple) {
-    for (unsigned int i=0; i<colNum; i++)
-    {
-        if(tuple[i] != NULL) {
-            delete [] tuple[i];
-            tuple[i] = NULL;
-        }
-    }
-}
-
-void printNextTuple(char** nextTuple) {
-    for (unsigned int i=0; i<colNum; i++)
-    {
-        if(nextTuple[i]!=NULL) {
-            printf("%s,  ", nextTuple[i]);
-        }
-    }
-    printf("\n");
-}
+/* Helper functions */
+void deleteTuple(char** tuple);
+void clearTuple(char** tuple);
+void printNextTuple(char** nextTuple);
 
 
-/*For fdw: init tuple memory, and other global var, should be used in BeginForeignScan() */
+/* wrapper functions for fdw*/
+
+/* init global var, should be used in BeginForeignScan() */
 void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
     colNum = fdwColNum;
     curRow = 0;//don't forget
@@ -66,7 +43,7 @@ void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fd
     printer->reset(*batch);
 }
 
-/*For fdw: iteratively get one line record, for using
+/* iteratively get one line record.
  * return: false means no next record.
  * */
 bool getNextOrcTuple(char ** tuple) {
@@ -101,9 +78,52 @@ bool getNextOrcTuple(char ** tuple) {
     }
 }
 
-/*For fdw: release tuple memory, should be used in EndForeignScan() */
+/* release tuple memory, should be used in EndForeignScan() */
 void releaseOrcBridgeMem(char **tuple) {
     deleteTuple(tuple);
 }
 
-/* end server: for fdw wrapper functions*/
+/**
+ * Get the number of rows in the file.
+ * @return the number of rows
+ */
+uint64_t getOrcTupleCount(const char* filename) {
+    orc::ReaderOptions gtc_opts;
+    std::unique_ptr<orc::Reader> gtc_reader;
+    gtc_reader = orc::createReader(orc::readLocalFile(std::string(filename)), gtc_opts);
+
+    return reader->getNumberOfRows();
+}
+
+
+/* Helper functions */
+
+void deleteTuple(char** tuple) {
+    for (unsigned int i=0; i<colNum; i++)
+    {
+        if(tuple[i]!=NULL) {
+            delete[] tuple[i];
+        }
+    }
+    delete [] tuple;
+}
+
+void clearTuple(char** tuple) {
+    for (unsigned int i=0; i<colNum; i++)
+    {
+        if(tuple[i] != NULL) {
+            delete [] tuple[i];
+            tuple[i] = NULL;
+        }
+    }
+}
+
+void printNextTuple(char** nextTuple) {
+    for (unsigned int i=0; i<colNum; i++)
+    {
+        if(nextTuple[i]!=NULL) {
+            printf("%s,  ", nextTuple[i]);
+        }
+    }
+    printf("\n");
+}

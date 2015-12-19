@@ -19,7 +19,6 @@
 #include "access/reloptions.h"
 #include "access/sysattr.h"
 #include "catalog/pg_foreign_table.h"
-//#include "commands/copy.h"
 #include "commands/defrem.h"
 #include "commands/explain.h"
 #include "commands/vacuum.h"
@@ -56,10 +55,6 @@ typedef struct FileFdwPlanState
     BlockNumber pages;			/* estimate of file's physical size */
     double		ntuples;		/* estimate of number of rows in file */
 } FileFdwPlanState;
-
-/*
- * FDW-specific information for ForeignScanState.fdw_state.
- */
 
 /*
  * SQL functions
@@ -250,20 +245,15 @@ fileGetForeignRelSize(PlannerInfo *root,
                       RelOptInfo *baserel,
                       Oid foreigntableid)
 {
-    FileFdwPlanState *fdw_private;
-    fdw_private = (FileFdwPlanState *) palloc(sizeof(FileFdwPlanState));
-
     OrcFdwOptions *options = OrcGetOptions(foreigntableid);
-    fdw_private->filename = options->filename;
-
-    /*
-     * Fetch options.  We only need filename at this point, but we might as
-     * well get everything and not need to re-fetch it later in planning.
-     */
-    baserel->fdw_private = (void *) fdw_private;
 
     /* Estimate relation size */
-    baserel->rows = SIM_ROWS;
+    double tupleCount = (double) getOrcTupleCount(options->filename);
+    double rowSelectivity = clauselist_selectivity(root, baserel->baserestrictinfo, 0, JOIN_INNER,
+                                                   NULL);
+
+    double outputRowCount = clamp_row_est(tupleCount * rowSelectivity);
+    baserel->rows = outputRowCount;
 }
 
 /*
