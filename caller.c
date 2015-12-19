@@ -30,7 +30,7 @@ void simIterativeScan() {
 }
 
 void simGetTupleCount() {
-    printf("row: %lu,  ", getOrcTupleCount("/usr/pgsql-9.4/test_data1.orc"));
+    printf("row: %lu\n", getOrcTupleCount("/usr/pgsql-9.4/test_data1.orc"));
 }
 
 int main(int argc, char* argv[]) {

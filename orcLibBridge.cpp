@@ -92,7 +92,7 @@ unsigned long long getOrcTupleCount(const char* filename) {
     std::unique_ptr<orc::Reader> gtc_reader;
     gtc_reader = orc::createReader(orc::readLocalFile(std::string(filename)), gtc_opts);
 
-    return reader->getNumberOfRows();
+    return gtc_reader->getNumberOfRows();
 }
 
 
