@@ -457,7 +457,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     ExecClearTuple(slot);
 
-    char *ss[5]= {"1", "mike", "NY", "100.23", "2013-01-01"};
+    char *ss[5] = {"1", "mike", "NY", "100.23", "2013-01-01"};
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
 
@@ -517,8 +517,6 @@ fileIterateForeignScan(ForeignScanState *node)
      * foreign tables.
      */
     ExecClearTuple(slot);
-
-    //char *ss[2]={"1","abcdef"};//simulate orc block data, 2d array
 
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
@@ -595,7 +593,7 @@ fileEndForeignScan(ForeignScanState *node)
         FreeFile(orcState->file);
     }*/
 
-    //pfree(orcState);
+    pfree(orcState);
 }
 
 /*

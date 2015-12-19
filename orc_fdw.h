@@ -53,7 +53,6 @@ typedef struct OrcFdwOptions
 typedef struct OrcExeState
 {
     //basic
-    FILE *file;
     char       *filename;
     int         colNum;//number of columns
 
