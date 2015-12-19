@@ -6,12 +6,11 @@
 #include <iostream>
 #include <exception>
 
-
 /*global variable*/
 unsigned int colNum = 0;
 unsigned int maxRowPerBatch = 1000;
 std::string line;
-unsigned long curRow = 0;
+unsigned long curRow;
 
 char fakefilename[50] = "/usr/pgsql-9.4/city.orc";
 
@@ -56,6 +55,7 @@ void printNextTuple(char** nextTuple) {
 /*For fdw: init tuple memory, and other global var, should be used in BeginForeignScan() */
 void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
     colNum = fdwColNum;
+    curRow = 0;
     //initTuple(tuple);
     maxRowPerBatch = fdwMaxRowPerBatch;
 
