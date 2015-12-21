@@ -60,6 +60,7 @@ typedef struct OrcFdwOptions
 typedef struct OrcExeState
 {
     //basic
+    // hdfsfile * should be added later
     char       *filename;
     int         colNum;//number of columns
 
@@ -68,6 +69,8 @@ typedef struct OrcExeState
     //other
     FmgrInfo   *in_functions;	/* array of input functions for each attrs */
     Oid		   *typioparams;	/* array of element types for in_functions */
+
+    List *queryRestrictionList; /* init in BeginForeignScan */
 
 
 } OrcExeState;
