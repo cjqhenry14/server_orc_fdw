@@ -83,7 +83,9 @@ static OrcFdwOptions * OrcGetOptions(Oid foreignTableId);
 
 static char * OrcGetOptionValue(Oid foreignTableId, const char *optionName);
 
-static List *ColumnList(RelOptInfo *baserel, Oid foreignTableId);
+//static List *ColumnList(RelOptInfo *baserel, Oid foreignTableId);
+
+static List * ColumnList(RelOptInfo *baserel);
 
 static TupleTableSlot *simIterateForeignScan(ForeignScanState *node);
 
@@ -274,7 +276,7 @@ fileGetForeignPaths(PlannerInfo *root,
      * However, we take per-tuple CPU costs as 10x of a seqscan to account for
      * the cost of parsing records.
      */
-    List *queryColumnList = ColumnList(baserel, foreigntableid);
+    List *queryColumnList = ColumnList(baserel);
     uint32 queryColumnCount = (uint32)list_length(queryColumnList);
     //TODO: can't get page count!!!
     BlockNumber relationPageCount = SIM_PAGES;
@@ -347,7 +349,7 @@ fileGetForeignPlan(PlannerInfo *root,
      * have access to baserel in executor's callback functions, so we get the
      * column list here and put it into foreign scan node's private list.
      */
-    columnList = ColumnList(baserel, foreigntableid);
+    columnList = ColumnList(baserel);
 
     foreignPrivateList = list_make1(columnList);
 
@@ -623,14 +625,13 @@ fileAnalyzeForeignTable(Relation relation,
 
 
 /*
- * Copyied from cstor_fdw, Oid foreignTableId is missed in another_orc_fdw.
  * ColumnList takes in the planner's information about this foreign table. The
  * function then finds all columns needed for query execution, including those
  * used in projections, joins, and filter clauses, de-duplicates these columns,
  * and returns them in a new list. This function is unchanged from mongo_fdw.
  */
 static List *
-ColumnList(RelOptInfo *baserel, Oid foreignTableId)
+ColumnList(RelOptInfo *baserel)
 {
     List *columnList = NIL;
     List *neededColumnList = NIL;
@@ -639,10 +640,6 @@ ColumnList(RelOptInfo *baserel, Oid foreignTableId)
     List *targetColumnList = baserel->reltargetlist;
     List *restrictInfoList = baserel->baserestrictinfo;
     ListCell *restrictInfoCell = NULL;
-    const AttrNumber wholeRow = 0;
-    Relation relation = heap_open(foreignTableId, AccessShareLock);
-    TupleDesc tupleDescriptor = RelationGetDescr(relation);
-    Form_pg_attribute *attributeFormArray = tupleDescriptor->attrs;
 
     /* first add the columns used in joins and projections */
     neededColumnList = list_copy(targetColumnList);
@@ -655,8 +652,7 @@ ColumnList(RelOptInfo *baserel, Oid foreignTableId)
         List *clauseColumnList = NIL;
 
         /* recursively pull up any columns used in the restriction clause */
-        clauseColumnList = pull_var_clause(restrictClause,
-                                           PVC_RECURSE_AGGREGATES,
+        clauseColumnList = pull_var_clause(restrictClause, PVC_RECURSE_AGGREGATES,
                                            PVC_RECURSE_PLACEHOLDERS);
 
         neededColumnList = list_union(neededColumnList, clauseColumnList);
@@ -677,16 +673,6 @@ ColumnList(RelOptInfo *baserel, Oid foreignTableId)
                 column = neededColumn;
                 break;
             }
-            else if (neededColumn->varattno == wholeRow)
-            {
-                Form_pg_attribute attributeForm = attributeFormArray[columnIndex - 1];
-                Index tableId = neededColumn->varno;
-
-                column = makeVar(tableId, columnIndex, attributeForm->atttypid,
-                                 attributeForm->atttypmod, attributeForm->attcollation,
-                                 0);
-                break;
-            }
         }
 
         if (column != NULL)
@@ -694,8 +680,6 @@ ColumnList(RelOptInfo *baserel, Oid foreignTableId)
             columnList = lappend(columnList, column);
         }
     }
-
-    heap_close(relation, AccessShareLock);
 
     return columnList;
 }
