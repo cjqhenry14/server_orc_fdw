@@ -458,7 +458,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     //linitial: get the list's head's data
     columnList = (List *) linitial(foreignPrivateList);
 
-    //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
+    orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
 
     node->fdw_state = (void *) orcState;
 }
