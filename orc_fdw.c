@@ -444,7 +444,21 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     orcState->in_functions = in_functions;
     orcState->typioparams = typioparams;
 
+    /* store query restriction list */
+    ForeignScan *foreignScan = NULL;
+    foreignScan = (ForeignScan *) node->ss.ps.plan;
 
+    List *foreignPrivateList = NIL;
+    foreignPrivateList = (List *) foreignScan->fdw_private;
+
+    /* real selected column list, which will be passed to orc lib */
+    /* TODO: the difference between columnList and foreignPrivateList, orcState->queryRestrictionList
+     * TODO: print 3 them out, why orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList)*/
+    List *columnList = NIL;
+    //linitial: get the list's head's data
+    columnList = (List *) linitial(foreignPrivateList);
+
+    //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
 
     node->fdw_state = (void *) orcState;
 }
