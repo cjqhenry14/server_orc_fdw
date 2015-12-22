@@ -276,14 +276,14 @@ fileGetForeignPaths(PlannerInfo *root,
      * However, we take per-tuple CPU costs as 10x of a seqscan to account for
      * the cost of parsing records.
      */
-    List *queryColumnList = ColumnList(baserel, foreigntableid);
-    uint32 queryColumnCount = (uint32)list_length(queryColumnList);
+    //List *queryColumnList = ColumnList(baserel, foreigntableid);
+    //uint32 queryColumnCount = (uint32)list_length(queryColumnList);
     //TODO: can't get page count!!!
     BlockNumber relationPageCount = SIM_PAGES;
     Relation relation = heap_open(foreigntableid, AccessShareLock);
     uint32 relationColumnCount = (uint32) RelationGetNumberOfAttributes(relation);
 
-    double queryColumnRatio = (double) queryColumnCount / relationColumnCount;
+    double queryColumnRatio = (double) 1/2;
     double queryPageCount = relationPageCount * queryColumnRatio;
     double totalDiskAccessCost = seq_page_cost * queryPageCount;
 
@@ -349,9 +349,9 @@ fileGetForeignPlan(PlannerInfo *root,
      * have access to baserel in executor's callback functions, so we get the
      * column list here and put it into foreign scan node's private list.
      */
-    columnList = ColumnList(baserel, foreigntableid);
+    //columnList = ColumnList(baserel, foreigntableid);
 
-    foreignPrivateList = list_make1(columnList);
+    //foreignPrivateList = list_make1(columnList);
 
     /* create the foreign scan node */
     foreignScan = make_foreignscan(tlist, scan_clauses, baserel->relid,
@@ -454,9 +454,9 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     /* real selected column list, which will be passed to orc lib */
     /* TODO: the difference between columnList and foreignPrivateList, orcState->queryRestrictionList
      * TODO: print 3 them out, why orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList)*/
-    List *columnList = NIL;
+    //List *columnList = NIL;
     //linitial: get the list's head's data
-    columnList = (List *) linitial(foreignPrivateList);
+    //columnList = (List *) linitial(foreignPrivateList);
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
