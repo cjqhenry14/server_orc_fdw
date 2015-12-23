@@ -535,6 +535,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
     ss[0][0] = '0' + count;
+    ss[0][1] = '\0';
 
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
