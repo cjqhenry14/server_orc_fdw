@@ -523,8 +523,8 @@ simIterateForeignScan(ForeignScanState *node)
     else {//region
         //ss[1][0] = '1';
     }
-    if(tupledes->attrs[2]->atttypmod >= 0)
-        itoa(tupledes->attrs[2]->atttypmod, ss[1]);
+
+    itoa(orcState->typioparams[2], ss[1]);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
