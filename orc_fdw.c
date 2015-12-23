@@ -513,8 +513,7 @@ simIterateForeignScan(ForeignScanState *node)
         found = false;
         memset(columnNulls, true, colNum * sizeof(bool));
     }
-
-    int i;
+    
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
