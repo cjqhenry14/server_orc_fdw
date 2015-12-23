@@ -535,7 +535,7 @@ simIterateForeignScan(ForeignScanState *node)
         //ss[1][0] = 'R';
     }
 
-    itoa(tupledes->attrs[i]->atttypmod, ss[1], 10);
+    //itoa(tupledes->attrs[i]->atttypmod, ss[1], 10);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
