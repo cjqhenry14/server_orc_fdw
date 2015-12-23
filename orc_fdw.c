@@ -467,44 +467,33 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     node->fdw_state = (void *) orcState;
 }
 
-char *itoa(int val, char *buf, unsigned radix)
+void itoa(int i, char * s)
 {
-    char   *p;
-    char   *firstdig;
-    char   temp;
-    unsigned   digval;
-    p = buf;
-    if(val <0)
+    int len=0, sign=1;
+    if(i<0)
     {
-        *p++ = '-';
-        val = (unsigned long)(-(long)val);
+        i*=-1;
+        sign=-1;
     }
-    firstdig = p;
-    do{
-        digval = (unsigned)(val % radix);
-        val /= radix;
+    int j=i;
+    while(j>0)
+    {
+        len++;
+        j/=10;
+    }
 
-        if  (digval > 9)
-            *p++ = (char)(digval - 10 + 'a');
-        else
-            *p++ = (char)(digval + '0');
-    }while(val > 0);
-
-    *p-- = '\0 ';
-    do{
-        temp = *p;
-        *p = *firstdig;
-        *firstdig = temp;
-        --p;
-        ++firstdig;
-    }while(firstdig < p);
-    return buf;
+    for(int k=len; k>=1; k--)
+    {
+        s[k-1]=i%10+'0';
+        i/=10;
+    }
+    s[len]='\0';
 }
 
 int count = 0;
-char ss[5][15] = {"1", "mike", "23", "hehe", "2013-01-01"};
-static TupleTableSlot *
+char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
 
+static TupleTableSlot *
 simIterateForeignScan(ForeignScanState *node)
 {
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
@@ -534,8 +523,8 @@ simIterateForeignScan(ForeignScanState *node)
     else {//region
         //ss[1][0] = 'R';
     }
-
-    //itoa(tupledes->attrs[i]->atttypmod, ss[1], 10);
+    if(tupledes->attrs[i]->atttypmod >= 0)
+        itoa(tupledes->attrs[i]->atttypmod, ss[1]);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
