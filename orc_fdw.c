@@ -468,6 +468,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 }
 
 int count = 0;
+char ss[5][15] = {"1", "mike", "23", "hehe", "2013-01-01"};
 static TupleTableSlot *
 simIterateForeignScan(ForeignScanState *node)
 {
@@ -477,7 +478,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     ExecClearTuple(slot);
 
-    char ss[5][15] = {"1", "mike", "23", "hehe", "2013-01-01"};
+
     //nation: int, string, int, string
     //region: int, string, string
     TupleDesc tupledes = slot->tts_tupleDescriptor;
@@ -517,7 +518,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        tmpNextTuple[i], orcState->typioparams[i],
+                                        ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
