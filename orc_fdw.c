@@ -409,7 +409,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     /* Fetch options of foreign table */
     Oid foreignTableId = RelationGetRelid(node->ss.ss_currentRelation);
     OrcFdwOptions *options = OrcGetOptions(foreignTableId);
-
+    
+    unsigned int i;
     /*
      * Save state in node->fdw_state.  We must save enough information to call
      * BeginCopyFrom() again.
@@ -573,7 +574,6 @@ fileIterateForeignScan(ForeignScanState *node)
     }
 
     //read and fill next line's record
-    int i;
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         if(tmpNextTuple[i] != NULL) {
