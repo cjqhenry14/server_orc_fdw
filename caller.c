@@ -2,7 +2,7 @@
 #include "orcLibBridge.h"
 #include <stdlib.h>
 
-void printNextTuple(char** nextTuple, int colNum) {
+void printNextTuple(char** nextTuple, unsigned int colNum) {
     unsigned int i; 
     for (i=0; i<colNum; i++)
     {
@@ -13,28 +13,31 @@ void printNextTuple(char** nextTuple, int colNum) {
     printf("\n");
 }
 
-void simIterativeScan() {
+void simIterativeScan(char * filename, unsigned int _colNum) {
     unsigned int i;
-    unsigned int colNum = 5;
-    initOrcReader("/usr/pgsql-9.4/test_data1.orc", 5, 1000);
-    char **nextTuple = (char **)malloc(colNum * sizeof(char *));
+    unsigned int colNum = _colNum;
+    initOrcReader(filename, colNum, 1000);
+    char **tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
     for (i=0; i<colNum; i++)
     {
-        nextTuple[i] = NULL;
+        tmpNextTuple[i] = NULL;
     }
 
-    while(getNextOrcTuple(nextTuple)) {
-        printNextTuple(nextTuple, colNum);
+    while(getNextOrcTuple(tmpNextTuple)) {
+        printNextTuple(tmpNextTuple, colNum);
     }
-    releaseOrcBridgeMem(nextTuple);
+
+    for(i=0; i<orcState->colNum; i++) {
+        free(tmpNextTuple[i]);
+    }
+    free(tmpNextTuple);
 }
 
-void simGetTupleCount() {
-    printf("row: %lu\n", getOrcTupleCount("/usr/pgsql-9.4/test_data1.orc"));
-}
 
 int main(int argc, char* argv[]) {
 
-    simGetTupleCount();
+    simGetTupleCount("/usr/pgsql-9.4/nation.orc", 4);
+    simGetTupleCount("/usr/pgsql-9.4/region.orc", 5);
+
     return 0;
 }
