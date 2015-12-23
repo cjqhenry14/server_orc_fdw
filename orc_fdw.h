@@ -69,7 +69,6 @@ typedef struct OrcExeState
     //other
     FmgrInfo   *in_functions;	/* array of input functions for each attrs */
     Oid		   *typioparams;	/* array of element types for in_functions */
-    atttypmod;
 
     List *queryRestrictionList; /* init in BeginForeignScan */
 
