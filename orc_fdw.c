@@ -474,7 +474,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     ExecClearTuple(slot);
 
-    char *ss[5] = {"1", "mike", "23", "hehe", "2013-01-01"};
+    char ss[5][15] = {"1", "mike", "23", "hehe", "2013-01-01"};
     ss[1][0] = 'N';
     //nation: int, string, int, string
     //region: int, string, string
