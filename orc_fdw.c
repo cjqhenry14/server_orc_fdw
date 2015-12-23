@@ -475,10 +475,18 @@ simIterateForeignScan(ForeignScanState *node)
     ExecClearTuple(slot);
 
     char *ss[5] = {"1", "mike", "23", "hehe", "2013-01-01"};
+
     //nation: int, string, int, string
     //region: int, string, string
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
+
+    if(colNum == 4) {//nation
+        ss[1][0] = 'N';
+    }
+    else {//region
+
+    }
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
