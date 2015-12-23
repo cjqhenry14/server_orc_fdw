@@ -36,8 +36,8 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
 
 int main(int argc, char* argv[]) {
 
-    simGetTupleCount("/usr/pgsql-9.4/nation.orc", 4);
-    simGetTupleCount("/usr/pgsql-9.4/region.orc", 5);
+    simIterativeScan("/usr/pgsql-9.4/nation.orc", 4);
+    simIterativeScan("/usr/pgsql-9.4/region.orc", 5);
 
     return 0;
 }
