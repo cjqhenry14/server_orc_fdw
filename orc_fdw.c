@@ -526,7 +526,7 @@ simIterateForeignScan(ForeignScanState *node)
     //orcState->typioparams[i] 是正确的
     //tupledes->attrs[i]->atttypmod 都是156....第3列
 
-    itoa(tupledes->attrs[1]->atttypmod, ss[1]);
+    itoa(tupledes->attrs[0]->atttypmod, ss[1]);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
