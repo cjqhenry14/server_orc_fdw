@@ -47,6 +47,13 @@ void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fd
  * return: false means no next record.
  * */
 bool getNextOrcTuple(char ** tuple) {
+    if(colNum == 4) {//nation
+
+    }
+    else {//region: int, string, string
+        tuple[2][0] = '9';
+        tuple[2][1] = '\0';
+    }
     //clearTuple(tuple);
 
     if(batch->numElements == 0)

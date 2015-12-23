@@ -400,7 +400,6 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     OrcExeState *orcState;
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
 
-    ExecClearTuple(slot);
 
     /*
      * Do nothing in EXPLAIN (no ANALYZE) case.  node->fdw_state stays NULL.
@@ -518,16 +517,6 @@ simIterateForeignScan(ForeignScanState *node)
     }
     getNextOrcTuple(tmpNextTuple);
 
-    if(colNum == 4) {//nation
-        //ss[1][0] = '1' + count;
-    }
-    else {//region
-        //ss[1][0] = '1' + count;
-    }
-    //orcState->typioparams[i] 是正确的
-    //tupledes->attrs[i]->atttypmod 都是156....第3列
-
-    //itoa(orcState->typioparams[2], ss[1]);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
