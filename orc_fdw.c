@@ -469,7 +469,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
 void itoa(int i, char * s)
 {
-    int len=0, sign=1;
+    int len=0, sign=1, k;
     if(i<0)
     {
         i*=-1;
@@ -482,7 +482,7 @@ void itoa(int i, char * s)
         j/=10;
     }
 
-    for(int k=len; k>=1; k--)
+    for(k=len; k>=1; k--)
     {
         s[k-1]=i%10+'0';
         i/=10;
