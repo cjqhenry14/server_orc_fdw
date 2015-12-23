@@ -491,7 +491,6 @@ void itoa(int i, char * s)
 }
 
 int count = 0;
-char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
 
 static TupleTableSlot *
 simIterateForeignScan(ForeignScanState *node)
@@ -518,10 +517,10 @@ simIterateForeignScan(ForeignScanState *node)
     getNextOrcTuple(tmpNextTuple);
 
     if(colNum == 4) {//nation
-        ss[1][0] = '1' + count;
+        //ss[1][0] = '1' + count;
     }
     else {//region
-        ss[1][0] = '1' + count;
+        //ss[1][0] = '1' + count;
     }
     //orcState->typioparams[i] 是正确的
     //tupledes->attrs[i]->atttypmod 都是156....第3列
@@ -543,13 +542,14 @@ simIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
-
+    char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
+    
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
-        tmpNextTuple[i][0] = '0' + i;
+        ss[i][0] = '0' + i;
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        tmpNextTuple[i], orcState->typioparams[i],
+                                        ss[i], orcState->typioparams[i],
                                         tupledes->attrs[i]->atttypmod);
 
        // if(tmpNextTuple[i][0]=='l') {
