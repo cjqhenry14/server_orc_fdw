@@ -543,12 +543,26 @@ simIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
+
+
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
+
+        Oid	in_func_oid;
+        Oid	typioparam;
+        Oid typeid;
+
+        typeid = tupledes->attrs[i]->atttypid;
+        getTypeInputInfo(typeid, &in_func_oid, &typioparam);
+
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        ss[i], orcState->typioparams[i],
+                                        tmpNextTuple[i], typioparam,
                                         tupledes->attrs[i]->atttypmod);
 
+        /*columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                        ss[i], orcState->typioparams[i],
+                                        tupledes->attrs[i]->atttypmod);
+*/
         slot->tts_values[i] = columnValue;
     }
 
