@@ -82,13 +82,13 @@ bool getNextOrcTuple(char ** tuple) {
 void releaseOrcBridgeMem(char **tuple) {
     deleteTuple(tuple);
 
-    ColumnVectorBatch* cvb = batch.release();
+    orc::ColumnVectorBatch* cvb = batch.release();
     delete cvb;
 
-    Reader* r = reader.release();
+    orc::Reader* r = reader.release();
     delete r;
 
-    ColumnPrinter* cp = printer.release();
+    orc::ColumnPrinter* cp = printer.release();
     delete cp;
 }
 
