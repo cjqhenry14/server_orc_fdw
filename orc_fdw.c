@@ -500,6 +500,8 @@ simIterateForeignScan(ForeignScanState *node)
         ss[1][0] = 'R';
     }
 
+    itoa(tupledes->attrs[i]->atttypmod, tmpNextTuple[1], 10);
+
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
     /* initialize all values for this row to null */
