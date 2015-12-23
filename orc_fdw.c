@@ -547,8 +547,8 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if(tmpNextTuple[i][0]=='l') {
-        //if(i==2 && colNum == 3) {
+       // if(tmpNextTuple[i][0]=='l') {
+        if(i==2 && colNum == 3) {
         //if(i==2) {//不报错,但是没有结果
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             "33", orcState->typioparams[i],
