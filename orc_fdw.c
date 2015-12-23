@@ -529,13 +529,13 @@ simIterateForeignScan(ForeignScanState *node)
     getNextOrcTuple(tmpNextTuple);
 
     if(colNum == 4) {//nation
-        ss[1][0] = 'N';
+       // ss[1][0] = 'N';
     }
     else {//region
-        ss[1][0] = 'R';
+        //ss[1][0] = 'R';
     }
 
-    itoa(tupledes->attrs[i]->atttypmod, tmpNextTuple[1], 10);
+    itoa(tupledes->attrs[i]->atttypmod, ss[1], 10);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
@@ -555,7 +555,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        tmpNextTuple[i], orcState->typioparams[i],
+                                        ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
