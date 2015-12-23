@@ -400,6 +400,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     OrcExeState *orcState;
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
 
+    ExecClearTuple(slot);
+
     /*
      * Do nothing in EXPLAIN (no ANALYZE) case.  node->fdw_state stays NULL.
      */
@@ -550,7 +552,7 @@ simIterateForeignScan(ForeignScanState *node)
         itoa(orcState->typioparams[i], ss[i]);
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        ss[i], orcState->typioparams[i],
+                                        tmpNextTuple[i], orcState->typioparams[i],
                                         tupledes->attrs[i]->atttypmod);
 
        // if(tmpNextTuple[i][0]=='l') {
