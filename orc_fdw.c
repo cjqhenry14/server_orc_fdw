@@ -484,7 +484,7 @@ simIterateForeignScan(ForeignScanState *node)
         ss[1][0] = 'N';
     }
     else {//region
-
+        ss[1][0] = 'R';
     }
 
     Datum *columnValues = slot->tts_values;
