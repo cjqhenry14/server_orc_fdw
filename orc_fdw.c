@@ -494,10 +494,10 @@ simIterateForeignScan(ForeignScanState *node)
     getNextOrcTuple(tmpNextTuple);
 
     if(colNum == 4) {//nation
-        tmpNextTuple[1][0] = 'N';
+        ss[1][0] = 'N';
     }
     else {//region
-        tmpNextTuple[1][0] = 'R';
+        ss[1][0] = 'R';
     }
 
     Datum *columnValues = slot->tts_values;
