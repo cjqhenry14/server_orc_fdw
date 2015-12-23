@@ -518,7 +518,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        ss[i], orcState->typioparams[i],
+                                        tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
@@ -652,6 +652,7 @@ fileEndForeignScan(ForeignScanState *node)
     {
         FreeFile(orcState->file);
     }*/
+    pfree(orcState->typioparams);
 
     pfree(orcState);
 }
