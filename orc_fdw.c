@@ -14,7 +14,6 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #include "access/htup_details.h"
 #include "access/reloptions.h"
@@ -468,9 +467,44 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     node->fdw_state = (void *) orcState;
 }
 
+char *itoa(int val, char *buf, unsigned radix)
+{
+    char   *p;
+    char   *firstdig;
+    char   temp;
+    unsigned   digval;
+    p = buf;
+    if(val <0)
+    {
+        *p++ = '-';
+        val = (unsigned long)(-(long)val);
+    }
+    firstdig = p;
+    do{
+        digval = (unsigned)(val % radix);
+        val /= radix;
+
+        if  (digval > 9)
+            *p++ = (char)(digval - 10 + 'a');
+        else
+            *p++ = (char)(digval + '0');
+    }while(val > 0);
+
+    *p-- = '\0 ';
+    do{
+        temp = *p;
+        *p = *firstdig;
+        *firstdig = temp;
+        --p;
+        ++firstdig;
+    }while(firstdig < p);
+    return buf;
+}
+
 int count = 0;
 char ss[5][15] = {"1", "mike", "23", "hehe", "2013-01-01"};
 static TupleTableSlot *
+
 simIterateForeignScan(ForeignScanState *node)
 {
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
