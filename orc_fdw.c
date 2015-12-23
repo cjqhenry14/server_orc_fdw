@@ -544,11 +544,13 @@ simIterateForeignScan(ForeignScanState *node)
 
     char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
 
+
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
+        itoa(orcState->typioparams[i], ss[i]);
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        tmpNextTuple[i], orcState->typioparams[i],
+                                        ss[i], orcState->typioparams[i],
                                         tupledes->attrs[i]->atttypmod);
 
        // if(tmpNextTuple[i][0]=='l') {
@@ -568,8 +570,8 @@ simIterateForeignScan(ForeignScanState *node)
         slot->tts_values[i] = columnValue;
     }
 
-    //if (found)
-    ExecStoreVirtualTuple(slot);
+    if (found)
+        ExecStoreVirtualTuple(slot);
 
     for(i=0; i<orcState->colNum; i++) {
         free(tmpNextTuple[i]);
