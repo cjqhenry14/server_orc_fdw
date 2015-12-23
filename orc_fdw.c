@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -474,7 +474,9 @@ simIterateForeignScan(ForeignScanState *node)
 
     ExecClearTuple(slot);
 
-    char *ss[5] = {"1", "mike", "NY", "100.23", "2013-01-01"};
+    char *ss[5] = {"1", "mike", "23", "hehe", "2013-01-01"};
+    //nation: int, string, int, string
+    //region: int, string, string
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
 
@@ -601,7 +603,7 @@ fileEndForeignScan(ForeignScanState *node)
         return;
     }
 
-    /*TODO: clears all file related memory */
+    /*TODO: clear all file related memory */
     releaseOrcBridgeMem(orcState->nextTuple);
 
     /*if (orcState->file)
