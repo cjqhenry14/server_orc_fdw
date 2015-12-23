@@ -27,7 +27,7 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
         printNextTuple(tmpNextTuple, colNum);
     }
 
-    for(i=0; i<orcState->colNum; i++) {
+    for(i=0; i<colNum; i++) {
         free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
