@@ -51,6 +51,7 @@ bool getNextOrcTuple(char ** tuple) {
 
     }
     else {//region: int, string, string
+        tuple[2] = new char[2];
         tuple[2][0] = '9';
         tuple[2][1] = '\0';
     }
