@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -612,6 +612,12 @@ fileEndForeignScan(ForeignScanState *node)
 
     /*TODO: clear all file related memory */
     releaseOrcBridgeMem(orcState->nextTuple);
+
+    int i;
+    for(i=0; i<orcState->colNum; i++) {
+        pfree(orcState->nextTuple[i]);
+    }
+    pfree(orcState->nextTuple);
 
     /*if (orcState->file)
     {
