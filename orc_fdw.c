@@ -14,6 +14,7 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "access/htup_details.h"
 #include "access/reloptions.h"
