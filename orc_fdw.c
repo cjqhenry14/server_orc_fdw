@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -409,7 +409,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     /* Fetch options of foreign table */
     Oid foreignTableId = RelationGetRelid(node->ss.ss_currentRelation);
     OrcFdwOptions *options = OrcGetOptions(foreignTableId);
-    
+
     unsigned int i;
     /*
      * Save state in node->fdw_state.  We must save enough information to call
@@ -483,11 +483,20 @@ simIterateForeignScan(ForeignScanState *node)
     TupleDesc tupledes = slot->tts_tupleDescriptor;
     int colNum = tupledes->natts;
 
+    char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
+
+    unsigned int i;
+    for (i=0; i<orcState->colNum; i++)
+    {
+        tmpNextTuple[i] = NULL;
+    }
+    getNextOrcTuple(tmpNextTuple);
+
     if(colNum == 4) {//nation
-        ss[1][0] = 'N';
+        tmpNextTuple[1][0] = 'N';
     }
     else {//region
-        ss[1][0] = 'R';
+        tmpNextTuple[1][0] = 'R';
     }
 
     Datum *columnValues = slot->tts_values;
@@ -496,7 +505,7 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     count++;
-    if(count < 7) {
+    if(count < 4) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -509,7 +518,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            ss[i], orcState->typioparams[i],
+                                        tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
@@ -517,6 +526,11 @@ simIterateForeignScan(ForeignScanState *node)
 
     if (found)
         ExecStoreVirtualTuple(slot);
+
+    for(i=0; i<orcState->colNum; i++) {
+        free(tmpNextTuple[i]);
+    }
+    free(tmpNextTuple);
 
     return slot;
 }
@@ -626,7 +640,7 @@ fileEndForeignScan(ForeignScanState *node)
     }
 
     /*TODO: clear all file related memory */
-    //releaseOrcBridgeMem(orcState->nextTuple);
+    releaseOrcBridgeMem();
 
     /*int i;
     for(i=0; i<orcState->colNum; i++) {

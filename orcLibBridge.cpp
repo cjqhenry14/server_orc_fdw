@@ -47,7 +47,7 @@ void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fd
  * return: false means no next record.
  * */
 bool getNextOrcTuple(char ** tuple) {
-    clearTuple(tuple);
+    //clearTuple(tuple);
 
     if(batch->numElements == 0)
         return false;
@@ -79,8 +79,8 @@ bool getNextOrcTuple(char ** tuple) {
 }
 
 /* release tuple memory, should be used in EndForeignScan() */
-void releaseOrcBridgeMem(char **tuple) {
-    deleteTuple(tuple);
+void releaseOrcBridgeMem() {
+    //deleteTuple(tuple);
 }
 
 /**

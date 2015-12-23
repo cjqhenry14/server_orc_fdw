@@ -18,7 +18,7 @@ void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fd
 bool getNextOrcTuple(char ** tuple);
 
 /* release tuple memory, should be used in EndForeignScan() */
-void releaseOrcBridgeMem(char ** tuple);
+void releaseOrcBridgeMem();
 
 
 /**
