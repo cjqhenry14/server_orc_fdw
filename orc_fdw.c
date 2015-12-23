@@ -423,6 +423,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     /*init orc reader (filename, column number, maxRowPerBatch) */
     initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
+    /*
     orcState->nextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     unsigned int i;
@@ -430,6 +431,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     {
         orcState->nextTuple[i] = NULL;
     }
+    */
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
     Oid			in_func_oid;
@@ -553,7 +555,15 @@ fileIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     /*has next tuple*/
-    if(getNextOrcTuple(orcState->nextTuple)) {
+    char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
+
+    unsigned int i;
+    for (i=0; i<orcState->colNum; i++)
+    {
+        tmpNextTuple[i] = NULL;
+    }
+
+    if(getNextOrcTuple(tmpNextTuple)) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -566,9 +576,9 @@ fileIterateForeignScan(ForeignScanState *node)
     int i;
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
-        if(orcState->nextTuple[i] != NULL) {
+        if(tmpNextTuple[i] != NULL) {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            orcState->nextTuple[i], orcState->typioparams[i],
+                                            tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
         }
         else {
@@ -577,6 +587,11 @@ fileIterateForeignScan(ForeignScanState *node)
 
         slot->tts_values[i] = columnValue;
     }
+
+    for(i=0; i<orcState->colNum; i++) {
+        free(tmpNextTuple[i]);
+    }
+    free(tmpNextTuple);
 
     if (found)
         ExecStoreVirtualTuple(slot);
@@ -611,13 +626,13 @@ fileEndForeignScan(ForeignScanState *node)
     }
 
     /*TODO: clear all file related memory */
-    releaseOrcBridgeMem(orcState->nextTuple);
+    //releaseOrcBridgeMem(orcState->nextTuple);
 
-    int i;
+    /*int i;
     for(i=0; i<orcState->colNum; i++) {
         pfree(orcState->nextTuple[i]);
     }
-    pfree(orcState->nextTuple);
+    pfree(orcState->nextTuple);*/
 
     /*if (orcState->file)
     {

@@ -81,15 +81,6 @@ bool getNextOrcTuple(char ** tuple) {
 /* release tuple memory, should be used in EndForeignScan() */
 void releaseOrcBridgeMem(char **tuple) {
     deleteTuple(tuple);
-
-    orc::ColumnVectorBatch* cvb = batch.release();
-    delete cvb;
-
-    orc::Reader* r = reader.release();
-    delete r;
-
-    orc::ColumnPrinter* cp = printer.release();
-    delete cp;
 }
 
 /**
