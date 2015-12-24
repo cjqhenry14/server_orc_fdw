@@ -65,11 +65,6 @@ bool getNextOrcTuple(char ** tuple) {
             printer->printRow(curRow, tuple, 0);
             curRow++;
 
-            if(colNum == 3) {//region: int, string, string
-                tuple[2][0] = '9';
-                tuple[2][1] = '\0';
-            }
-
             return true;
         }
         else
@@ -79,11 +74,6 @@ bool getNextOrcTuple(char ** tuple) {
     else {
         printer->printRow(curRow, tuple, 0);
         curRow++;
-
-        if(colNum == 3) {//region: int, string, string
-            tuple[2][0] = '9';
-            tuple[2][1] = '\0';
-        }
 
         return true;
     }

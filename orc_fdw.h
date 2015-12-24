@@ -71,7 +71,7 @@ typedef struct OrcExeState
     Oid		   *typioparams;	/* array of element types for in_functions */
 
     List *queryRestrictionList; /* init in BeginForeignScan */
-
+    TupleDesc tupleDescriptor;
 
 } OrcExeState;
 

@@ -400,7 +400,6 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     OrcExeState *orcState;
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
 
-
     /*
      * Do nothing in EXPLAIN (no ANALYZE) case.  node->fdw_state stays NULL.
      */
@@ -418,22 +417,17 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
      */
     orcState = (OrcExeState *) palloc(sizeof(OrcExeState));
     orcState->filename = options->filename;
-    //orcState->file = AllocateFile(orcState->filename, "r");
 
     //get colNum
     orcState->colNum = slot->tts_tupleDescriptor->natts;
-
     /*init orc reader (filename, column number, maxRowPerBatch) */
     initOrcReader(orcState->filename, orcState->colNum, MAX_ROW_PER_BATCH);
-    /*
-    orcState->nextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
-    unsigned int i;
-    for (i=0; i<orcState->colNum; i++)
-    {
-        orcState->nextTuple[i] = NULL;
-    }
-    */
+
+    TupleDesc tupleDescriptor = slot->tts_tupleDescriptor;
+    orcState->tupleDescriptor = tupleDescriptor;
+
+
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
     Oid			in_func_oid;
@@ -505,7 +499,8 @@ simIterateForeignScan(ForeignScanState *node)
 
     //nation: int, string, int, string
     //region: int, string, string
-    TupleDesc tupledes = slot->tts_tupleDescriptor;
+    //TupleDesc tupledes = slot->tts_tupleDescriptor;
+    TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
 
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
