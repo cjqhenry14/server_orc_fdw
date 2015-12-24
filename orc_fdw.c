@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -534,8 +534,6 @@ simIterateForeignScan(ForeignScanState *node)
     ss[0][0] = '0' + count;
     ss[0][1] = '\0';
 
-    ss[1][0] = orcState->filename[15];
-
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
@@ -626,13 +624,22 @@ fileIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
+    char tmp[10] = "999";
     //read and fill next line's record
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         if(tmpNextTuple[i] != NULL) {
-            columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            tmpNextTuple[i], orcState->typioparams[i],
-                                            tupledes->attrs[i]->atttypmod);
+            if(i == 2) {
+                columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                                tmp, orcState->typioparams[i],
+                                                tupledes->attrs[i]->atttypmod);
+            }
+            else {
+                columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                                tmpNextTuple[i], orcState->typioparams[i],
+                                                tupledes->attrs[i]->atttypmod);
+            }
+
         }
         else {
             slot->tts_isnull[i] = true;
