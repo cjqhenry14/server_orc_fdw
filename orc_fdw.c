@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -534,8 +534,11 @@ simIterateForeignScan(ForeignScanState *node)
     ss[0][0] = '0' + count;
     ss[0][1] = '\0';
 
+    ss[1][0] = orcState->filename[15];
+
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
+
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
                                         ss[i], orcState->typioparams[i],
