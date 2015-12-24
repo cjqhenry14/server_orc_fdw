@@ -427,6 +427,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     TupleDesc tupleDescriptor = slot->tts_tupleDescriptor;
     orcState->tupleDescriptor = tupleDescriptor;
 
+    orcState->rel = node->ss.ss_currentRelation;
+
 
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
@@ -594,7 +596,8 @@ fileIterateForeignScan(ForeignScanState *node)
     ExecClearTuple(slot);
 
     //TupleDesc tupledes = slot->tts_tupleDescriptor;
-    TupleDesc tupledes = orcState->tupleDescriptor;
+    //TupleDesc tupledes = orcState->tupleDescriptor;
+    TupleDesc tupledes = RelationGetDescr(cstate->rel);
     int colNum = tupledes->natts;
 
     Datum *columnValues = slot->tts_values;

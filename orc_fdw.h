@@ -72,6 +72,7 @@ typedef struct OrcExeState
 
     List *queryRestrictionList; /* init in BeginForeignScan */
     TupleDesc tupleDescriptor;
+    Relation	rel;			/* relation to copy to or from */
 
 } OrcExeState;
 
