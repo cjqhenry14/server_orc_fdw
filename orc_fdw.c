@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -533,6 +533,10 @@ simIterateForeignScan(ForeignScanState *node)
     char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
     ss[0][0] = '0' + count;
     ss[0][1] = '\0';
+
+    if(colNum == 3) {
+        ss[2][0] = 'K';
+    }
 
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
