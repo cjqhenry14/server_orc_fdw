@@ -597,7 +597,7 @@ fileIterateForeignScan(ForeignScanState *node)
 
     //TupleDesc tupledes = slot->tts_tupleDescriptor;
     //TupleDesc tupledes = orcState->tupleDescriptor;
-    TupleDesc tupledes = RelationGetDescr(cstate->rel);
+    TupleDesc tupledes = RelationGetDescr(orcState->rel);
     int colNum = tupledes->natts;
 
     Datum *columnValues = slot->tts_values;
