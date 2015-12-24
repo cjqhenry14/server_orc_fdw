@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -593,7 +593,8 @@ fileIterateForeignScan(ForeignScanState *node)
      */
     ExecClearTuple(slot);
 
-    TupleDesc tupledes = slot->tts_tupleDescriptor;
+    //TupleDesc tupledes = slot->tts_tupleDescriptor;
+    TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
 
     Datum *columnValues = slot->tts_values;
@@ -634,13 +635,14 @@ fileIterateForeignScan(ForeignScanState *node)
         slot->tts_values[i] = columnValue;
     }
 
+    if (found)
+        ExecStoreVirtualTuple(slot);
+
+
     for(i=0; i<orcState->colNum; i++) {
         free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
-
-    if (found)
-        ExecStoreVirtualTuple(slot);
 
     return slot;
 }
