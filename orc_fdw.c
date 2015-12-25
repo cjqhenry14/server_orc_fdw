@@ -285,6 +285,7 @@ fileGetForeignPaths(PlannerInfo *root,
     double totalDiskAccessCost = seq_page_cost * queryPageCount;
 
     //double tupleCountEstimate = (double) actualTotalRowCount;
+    OrcFdwOptions *options = OrcGetOptions(foreigntableid);
     double tupleCountEstimate = (double) getOrcTupleCount(options->filename);
     /*
      * We estimate costs almost the same way as cost_seqscan(), thus assuming
