@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -269,7 +269,6 @@ fileGetForeignPaths(PlannerInfo *root,
                     Oid foreigntableid)
 {
     Path *foreignScanPath = NULL;
-
     /*
      * We estimate costs almost the same way as cost_seqscan(), thus assuming
      * that I/O costs are equivalent to a regular table file of the same size.
@@ -494,19 +493,21 @@ simIterateForeignScan(ForeignScanState *node)
     ExecClearTuple(slot);
 
     //nation: int, string, int, string
-    //region: int, string, string
-    //TupleDesc tupledes = slot->tts_tupleDescriptor;
+    //supplier: int, string, string, int, string, double, string
+
     TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
+    unsigned int i;
 
+    /*
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
-    unsigned int i;
     for (i=0; i<orcState->colNum; i++)
     {
         tmpNextTuple[i] = NULL;
     }
     getOrcNextTuple(orcState->filename, tmpNextTuple);
+     */
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
@@ -514,7 +515,7 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     count++;
-    if(count < 7) {
+    if(count < 200000) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -523,17 +524,12 @@ simIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
-    char ss[5][55] = {"1", "mike", "23", "hehe", "2013-01-01"};
+    char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     ss[0][0] = '0' + count;
     ss[0][1] = '\0';
 
-    if(colNum == 3) {
-        ss[2][0] = 'K';
-    }
-
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
-
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
                                         ss[i], orcState->typioparams[i],
@@ -546,10 +542,11 @@ simIterateForeignScan(ForeignScanState *node)
     if (found)
         ExecStoreVirtualTuple(slot);
 
-    for(i=0; i<orcState->colNum; i++) {
+    /*for(i=0; i<orcState->colNum; i++) {
         free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
+     */
 
     return slot;
 }
