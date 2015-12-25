@@ -564,13 +564,13 @@ simIterateForeignScan(ForeignScanState *node)
 
         if(colNum == 4 && (i == 1 || i == 3)) {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            tmpNextTuple[i], orcState->typioparams[i],
+                                            ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         }
         else {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            ss[i], orcState->typioparams[i],
+                                            tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
         }
 
