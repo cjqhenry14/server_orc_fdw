@@ -127,6 +127,12 @@ std::unordered_map<const char*, OrcReader*> readerMap;//<filename, OrcReader>
 
 /* init global var, should be used in BeginForeignScan() */
 void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
+    if(readerMap.find(filename) != readerMap.end()) {// already existed
+        free(readerMap[filename]);
+        readerMap[filename] = NULL;
+        readerMap.erase(filename);
+    }
+
     OrcReader * orcreader = new OrcReader(filename, fdwColNum, fdwMaxRowPerBatch);
     readerMap[filename] = orcreader;
 }
