@@ -24,7 +24,7 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
     }
 
     while(getOrcNextTuple(filename, tmpNextTuple)) {
-        printNextTuple(tmpNextTuple, colNum);
+        //printNextTuple(tmpNextTuple, colNum);
     }
 
     for(i=0; i<colNum; i++) {
@@ -36,6 +36,9 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
 
 int main(int argc, char* argv[]) {
 
+    simIterativeScan("/usr/pgsql-9.4/supplier.orc", 7);
+    printf("rows: %lu\n", getOrcTupleCount("/usr/pgsql-9.4/supplier.orc"));
+
     simIterativeScan("/usr/pgsql-9.4/nation.orc", 4);
     printf("rows: %lu\n", getOrcTupleCount("/usr/pgsql-9.4/nation.orc"));
 
@@ -44,6 +47,7 @@ int main(int argc, char* argv[]) {
 
     releaseOrcReader("/usr/pgsql-9.4/nation.orc");
     releaseOrcReader("/usr/pgsql-9.4/region.orc");
+    releaseOrcReader("/usr/pgsql-9.4/supplier.orc");
 
     return 0;
 }
