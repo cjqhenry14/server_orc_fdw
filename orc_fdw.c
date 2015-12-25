@@ -512,7 +512,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
-    /*
+
     if(count < 200) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
@@ -521,8 +521,8 @@ simIterateForeignScan(ForeignScanState *node)
         found = false;
         memset(columnNulls, true, colNum * sizeof(bool));
     }
-    */
 
+/*
     if(getOrcNextTuple(orcState->filename, tmpNextTuple)) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
@@ -531,6 +531,7 @@ simIterateForeignScan(ForeignScanState *node)
         found = false;
         memset(columnNulls, true, colNum * sizeof(bool));
     }
+     */
 
     //nation: int, string, int, string
     //supplier: int, string, string, int, string, double, string
