@@ -15,10 +15,10 @@ void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fd
  * iteratively get one line record.
  * @return: false means no next record.
  */
-bool getNextOrcTuple(char ** tuple);
+bool getOrcNextTuple(const char* filename, char ** tuple);
 
 /* release tuple memory, should be used in EndForeignScan() */
-void releaseOrcBridgeMem();
+void releaseOrcReader(const char* filename);
 
 
 /**
