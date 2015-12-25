@@ -526,7 +526,7 @@ simIterateForeignScan(ForeignScanState *node)
     }
 
     char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
-    ss[0][0] = '0' + count;
+    ss[0][0] = '0' + count % 9;
     ss[0][1] = '\0';
 
     for(i = 0; i < colNum; i++) {
