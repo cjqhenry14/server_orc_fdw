@@ -548,7 +548,7 @@ simIterateForeignScan(ForeignScanState *node)
      * 第6列用tmpNextTuple, OK
      *
      * 只对于nation表:
-     * 第1列用tmpNextTuple,
+     * 第1列用tmpNextTuple, fail
      * 第3列用tmpNextTuple,
      *
      *
@@ -560,7 +560,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if(colNum == 4 && i == 1) {
+        if(colNum == 4 && i == 3) {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
