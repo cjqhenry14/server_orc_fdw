@@ -557,7 +557,6 @@ simIterateForeignScan(ForeignScanState *node)
     return slot;
 }
 
-
 /*
  * fileIterateForeignScan
  *		Read next record from the data file and store it into the
@@ -617,7 +616,6 @@ fileIterateForeignScan(ForeignScanState *node)
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                                 tmpNextTuple[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
-
 
         }
         else {

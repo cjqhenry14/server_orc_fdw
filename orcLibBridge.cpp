@@ -20,9 +20,9 @@ public:
 
     orc::ReaderOptions opts;
 /*init first, avoid init with abstract obj. Then change in initOrcReader()*/
-    std::unique_ptr<orc::Reader> reader = orc::createReader(orc::readLocalFile(std::string(fakefilename)), opts);
-    std::unique_ptr<orc::ColumnVectorBatch> batch = reader->createRowBatch(1000);
-    std::unique_ptr<orc::ColumnPrinter> printer = createColumnPrinter(line, reader->getType());
+    std::unique_ptr<orc::Reader> reader;
+    std::unique_ptr<orc::ColumnVectorBatch> batch;
+    std::unique_ptr<orc::ColumnPrinter> printer;
 
 /* init global var, should be used in BeginForeignScan() */
     OrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
