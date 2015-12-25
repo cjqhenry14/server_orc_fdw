@@ -8,7 +8,6 @@
 #include "fmgr.h"
 
 #define MYLOGFILE "/usr/pgsql-9.4/mylog.txt"
-#define SIM_ROWS 7
 #define SIM_PAGES 1
 
 /* Defines for valid option names and default values */
@@ -18,6 +17,7 @@
 #define MAX_ROW_PER_BATCH 1000
 
 extern FILE * logfile;
+
 /*actualTotalRowCount is stored as global var, avoid repeat computing
  * can't be stored in OrcFdwOptions: because only can be used if baserel is provided
  * can't be stored in OrcExeState: because OrcExeState is init in BeginForeignScan

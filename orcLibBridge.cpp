@@ -7,9 +7,6 @@
 #include <exception>
 #include <unordered_map>
 
-/*only use for init, the real filename will be passed from orc_fdw*/
-char fakefilename[50] = "/usr/pgsql-9.4/city.orc";
-
 class OrcReader {
 public:
 /*global variable*/
@@ -19,12 +16,11 @@ public:
     unsigned long curRow;
 
     orc::ReaderOptions opts;
-/*init first, avoid init with abstract obj. Then change in initOrcReader()*/
     std::unique_ptr<orc::Reader> reader;
     std::unique_ptr<orc::ColumnVectorBatch> batch;
     std::unique_ptr<orc::ColumnPrinter> printer;
 
-/* init global var, should be used in BeginForeignScan() */
+    /* init global var, should be used in BeginForeignScan() */
     OrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
         colNum = fdwColNum;
         curRow = 0;//don't forget
@@ -34,6 +30,7 @@ public:
         batch = reader->createRowBatch(maxRowPerBatch);
         printer = createColumnPrinter(line, reader->getType());
 
+        /* get first batch of record */
         reader->next(*batch);
         printer->reset(*batch);
     }
@@ -50,9 +47,9 @@ public:
     }
 
 
-/* iteratively get one line record.
- * return: false means no next record.
- * */
+    /* iteratively get one line record.
+     * return: false means no next record.
+    * */
     bool OrcGetNext(char ** tuple) {
         if(batch->numElements == 0)
             return false;
@@ -82,15 +79,16 @@ public:
             return true;
         }
     }
-/**
- * Get the number of rows in the file.
- * @return the number of rows
- */
+
+    /**
+    * Get the number of rows in the file.
+    * @return the number of rows
+    */
     unsigned long long OrcGetTupleCount(const char* filename) {
         return reader->getNumberOfRows();
     }
 
-/* Helper functions */
+    /* Helper functions */
     void deleteTuple(char** tuple) {
         for (unsigned int i=0; i<colNum; i++)
         {
@@ -122,15 +120,18 @@ public:
     }
 };
 
-std::unordered_map<const char*, OrcReader*> readerMap;//filename, OrcReader
+std::unordered_map<const char*, OrcReader*> readerMap;//<filename, OrcReader>
+
 
 // wrapper functions:
 
+/* init global var, should be used in BeginForeignScan() */
 void initOrcReader(const char* filename, unsigned int fdwColNum, unsigned int fdwMaxRowPerBatch) {
     OrcReader * orcreader = new OrcReader(filename, fdwColNum, fdwMaxRowPerBatch);
     readerMap[filename] = orcreader;
 }
 
+/* release tuple memory, should be used in EndForeignScan() */
 void releaseOrcReader(const char* filename) {
     if(readerMap.find(filename) != readerMap.end()) {// already existed
         free(readerMap[filename]);
@@ -139,6 +140,10 @@ void releaseOrcReader(const char* filename) {
     }
 }
 
+/**
+ * iteratively get one line record, , should be used in IterativeForeignScan()
+ * @return: false means no next record.
+ */
 bool getOrcNextTuple(const char* filename, char ** tuple) {
     if(readerMap.find(filename) == readerMap.end()) {
         // haven't initialized
@@ -149,6 +154,10 @@ bool getOrcNextTuple(const char* filename, char ** tuple) {
     return orcreader->OrcGetNext(tuple);
 }
 
+/**
+ * Get the number of rows in the file.
+ * @return the number of rows
+ */
 unsigned long long getOrcTupleCount(const char* filename) {
     if(readerMap.find(filename) == readerMap.end()) {
         // haven't initialized
