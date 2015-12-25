@@ -505,6 +505,8 @@ simIterateForeignScan(ForeignScanState *node)
         tmpNextTuple[i] = NULL;
     }
 
+    getOrcNextTuple(orcState->filename, tmpNextTuple);
+
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
     /* initialize all values for this row to null */
@@ -513,7 +515,7 @@ simIterateForeignScan(ForeignScanState *node)
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
 
-    if(count < 200) {
+    if(count < 25000) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
