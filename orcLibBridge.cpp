@@ -122,7 +122,7 @@ public:
     }
 };
 
-std::unordered_map<char*, OrcReader*> readerMap;//filename, OrcReader
+std::unordered_map<const char*, OrcReader*> readerMap;//filename, OrcReader
 
 // wrapper functions:
 
