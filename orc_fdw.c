@@ -515,8 +515,9 @@ simIterateForeignScan(ForeignScanState *node)
     /* initialize all values for this row to null */
     memset(columnValues, 0, colNum * sizeof(Datum));
 
+    //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
-    if(count < 20) {
+    if(count < 200) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
