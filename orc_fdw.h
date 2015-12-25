@@ -21,7 +21,7 @@ extern FILE * logfile;
  * can't be stored in OrcFdwOptions: because only can be used if baserel is provided
  * can't be stored in OrcExeState: because OrcExeState is init in BeginForeignScan
  * So, set as global var*/
-uint64 actualTotalRowCount;
+//uint64 actualTotalRowCount;
 
 /*
  * OrcValidOption keeps an option name and a context. When an option is passed

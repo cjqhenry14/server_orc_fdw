@@ -244,9 +244,9 @@ fileGetForeignRelSize(PlannerInfo *root,
     /* Estimate relation size */
     /*actualTotalRowCount is stored as global var, avoid repeat computing
      * can't be stored in OrcFdwOptions: because only can be used if baserel is provided*/
-    actualTotalRowCount = getOrcTupleCount(options->filename);
-
-    double tupleCount = (double) actualTotalRowCount;
+    //actualTotalRowCount = getOrcTupleCount(options->filename);
+    //double tupleCount = (double) actualTotalRowCount;
+    double tupleCount = getOrcTupleCount(options->filename);
 
     double rowSelectivity = clauselist_selectivity(root, baserel->baserestrictinfo, 0, JOIN_INNER,
                                                    NULL);
@@ -285,8 +285,8 @@ fileGetForeignPaths(PlannerInfo *root,
     double queryPageCount = relationPageCount * queryColumnRatio;
     double totalDiskAccessCost = seq_page_cost * queryPageCount;
 
-    double tupleCountEstimate = (double) actualTotalRowCount;
-
+    //double tupleCountEstimate = (double) actualTotalRowCount;
+    double tupleCountEstimate = (double) getOrcTupleCount(options->filename);
     /*
      * We estimate costs almost the same way as cost_seqscan(), thus assuming
      * that I/O costs are equivalent to a regular table file of the same size.
