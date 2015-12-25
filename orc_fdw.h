@@ -8,13 +8,12 @@
 #include "fmgr.h"
 
 #define MYLOGFILE "/usr/pgsql-9.4/mylog.txt"
-#define SIM_PAGES 1
-
-/* Defines for valid option names and default values */
-#define OPTION_NAME_FILENAME "filename"
-
+#define SIM_PAGES 50000// one page = 4kb, 200mb file = 50000 pages
 #define ORC_TUPLE_COST_MULTIPLIER 10
 #define MAX_ROW_PER_BATCH 1000
+
+/* Defines for valid option names */
+#define OPTION_NAME_FILENAME "filename"
 
 extern FILE * logfile;
 
@@ -50,7 +49,7 @@ static const OrcValidOption ValidOptionArray[] =
 typedef struct OrcFdwOptions
 {
     char *filename;
-    //these 3 are defined in cstorw
+    //these 3 are defined in cstore
     //CompressionType compressionType;
     //uint64 stripeRowCount;
     //uint32 blockRowCount;
