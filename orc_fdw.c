@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -493,8 +493,6 @@ simIterateForeignScan(ForeignScanState *node)
 
     ExecClearTuple(slot);
 
-
-
     TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
     unsigned int i;
@@ -506,8 +504,6 @@ simIterateForeignScan(ForeignScanState *node)
     {
         tmpNextTuple[i] = NULL;
     }
-    getOrcNextTuple(orcState->filename, tmpNextTuple);
-
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
@@ -516,7 +512,18 @@ simIterateForeignScan(ForeignScanState *node)
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
+    /*
     if(count < 200) {
+        memset(columnNulls, false, colNum * sizeof(bool));
+        found = true;
+    }
+    else {
+        found = false;
+        memset(columnNulls, true, colNum * sizeof(bool));
+    }
+    */
+
+    if(getOrcNextTuple(orcState->filename, tmpNextTuple)) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -642,7 +649,6 @@ fileIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
-    char ss[7][20] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     //read and fill next line's record
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
@@ -650,7 +656,7 @@ fileIterateForeignScan(ForeignScanState *node)
         if(tmpNextTuple[i] != NULL) {
 
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                                ss[i], orcState->typioparams[i],
+                                                tmpNextTuple[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
         }
         else {
