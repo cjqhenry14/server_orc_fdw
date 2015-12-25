@@ -647,14 +647,13 @@ fileIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if(colNum == 4 && (i == 1 || i == 3)) {
-            columnValue = InputFunctionCall(&orcState->in_functions[i],
+        columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
-        }
 
-        else if(tmpNextTuple[i] != NULL) {
+/*
+        if(tmpNextTuple[i] != NULL) {
 
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                                 tmpNextTuple[i], orcState->typioparams[i],
@@ -663,7 +662,7 @@ fileIterateForeignScan(ForeignScanState *node)
         else {
             slot->tts_isnull[i] = true;
         }
-
+*/
         slot->tts_values[i] = columnValue;
     }
 
