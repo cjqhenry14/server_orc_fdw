@@ -280,8 +280,6 @@ fileGetForeignPaths(PlannerInfo *root,
     //uint32 queryColumnCount = (uint32)list_length(queryColumnList);
     //TODO: can't get page count!!!
     BlockNumber relationPageCount = SIM_PAGES;
-    Relation relation = heap_open(foreigntableid, AccessShareLock);
-    uint32 relationColumnCount = (uint32) RelationGetNumberOfAttributes(relation);
 
     double queryColumnRatio = (double) 1/2;
     double queryPageCount = relationPageCount * queryColumnRatio;
@@ -308,7 +306,6 @@ fileGetForeignPaths(PlannerInfo *root,
                                                        NIL); /* no fdw_private */
 
     add_path(baserel, foreignScanPath);
-    heap_close(relation, AccessShareLock);
 }
 
 /*
