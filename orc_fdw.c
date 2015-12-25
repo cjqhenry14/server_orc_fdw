@@ -549,9 +549,11 @@ simIterateForeignScan(ForeignScanState *node)
      *
      * 只对于nation表:
      * 第1列用tmpNextTuple, fail
+     * 第3列用tmpNextTuple, fail
+     *
+     * 只对于supplier表:
+     * 第1列用tmpNextTuple,
      * 第3列用tmpNextTuple,
-     *
-     *
      * */
     char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     ss[0][0] = '0' + count % 9;
@@ -560,7 +562,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if(colNum == 4 && i == 3) {
+        if(colNum == 7 && i == 1) {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
