@@ -500,7 +500,7 @@ simIterateForeignScan(ForeignScanState *node)
     int colNum = tupledes->natts;
     unsigned int i;
 
-    /*
+
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     for (i=0; i<orcState->colNum; i++)
@@ -508,7 +508,7 @@ simIterateForeignScan(ForeignScanState *node)
         tmpNextTuple[i] = NULL;
     }
     getOrcNextTuple(orcState->filename, tmpNextTuple);
-     */
+
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
@@ -543,11 +543,11 @@ simIterateForeignScan(ForeignScanState *node)
     if (found)
         ExecStoreVirtualTuple(slot);
 
-    /*for(i=0; i<orcState->colNum; i++) {
+    for(i=0; i<orcState->colNum; i++) {
         free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
-     */
+    
 
     return slot;
 }
