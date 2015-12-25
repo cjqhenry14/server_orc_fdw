@@ -64,15 +64,12 @@ typedef struct OrcExeState
     char       *filename;
     int         colNum;//number of columns
 
-    char** nextTuple;
-
     //other
     FmgrInfo   *in_functions;	/* array of input functions for each attrs */
     Oid		   *typioparams;	/* array of element types for in_functions */
 
     List *queryRestrictionList; /* init in BeginForeignScan */
     TupleDesc tupleDescriptor;
-    Relation	rel;			/* relation to copy to or from */
 
 } OrcExeState;
 

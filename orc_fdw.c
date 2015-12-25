@@ -427,8 +427,6 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     TupleDesc tupleDescriptor = slot->tts_tupleDescriptor;
     orcState->tupleDescriptor = tupleDescriptor;
 
-    orcState->rel = node->ss.ss_currentRelation;
-
 
     //init in_functions, typioparams
     FmgrInfo   *in_functions = (FmgrInfo *) palloc(orcState->colNum * sizeof(FmgrInfo));
@@ -544,19 +542,6 @@ simIterateForeignScan(ForeignScanState *node)
                                         ss[i], orcState->typioparams[i],
                                         tupledes->attrs[i]->atttypmod);
 
-       // if(tmpNextTuple[i][0]=='l') {
-        //if(i==2 && colNum == 3) {
-        /*if(i==2) {//不报错,但是没有结果
-            columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            "33", orcState->typioparams[i],
-                                            tupledes->attrs[i]->atttypmod);
-        }
-        else {
-            columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            tmpNextTuple[i], orcState->typioparams[i],
-                                            tupledes->attrs[i]->atttypmod);
-        }*/
-
 
         slot->tts_values[i] = columnValue;
     }
@@ -599,8 +584,7 @@ fileIterateForeignScan(ForeignScanState *node)
     ExecClearTuple(slot);
 
     //TupleDesc tupledes = slot->tts_tupleDescriptor;
-    //TupleDesc tupledes = orcState->tupleDescriptor;
-    TupleDesc tupledes = RelationGetDescr(orcState->rel);
+    TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
 
     Datum *columnValues = slot->tts_values;
@@ -610,7 +594,6 @@ fileIterateForeignScan(ForeignScanState *node)
 
     /*has next tuple*/
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
-
     unsigned int i;
     for (i=0; i<orcState->colNum; i++)
     {
@@ -626,7 +609,6 @@ fileIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
-    //char tmp[10] = "999";
     //read and fill next line's record
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
@@ -686,17 +668,8 @@ fileEndForeignScan(ForeignScanState *node)
     /*TODO: clear all file related memory */
     releaseOrcReader(orcState->filename);
 
-    /*int i;
-    for(i=0; i<orcState->colNum; i++) {
-        pfree(orcState->nextTuple[i]);
-    }
-    pfree(orcState->nextTuple);*/
-
-    /*if (orcState->file)
-    {
-        FreeFile(orcState->file);
-    }*/
     pfree(orcState->typioparams);
+    pfree(orcState->in_functions);
 
     pfree(orcState);
 }
