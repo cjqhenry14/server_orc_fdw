@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -498,7 +498,6 @@ simIterateForeignScan(ForeignScanState *node)
 
     ExecClearTuple(slot);
 
-
     //nation: int, string, int, string
     //region: int, string, string
     //TupleDesc tupledes = slot->tts_tupleDescriptor;
@@ -512,8 +511,7 @@ simIterateForeignScan(ForeignScanState *node)
     {
         tmpNextTuple[i] = NULL;
     }
-    getNextOrcTuple(tmpNextTuple);
-
+    getOrcNextTuple(orcState->filename, tmpNextTuple);
 
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
@@ -619,7 +617,7 @@ fileIterateForeignScan(ForeignScanState *node)
         tmpNextTuple[i] = NULL;
     }
 
-    if(getNextOrcTuple(tmpNextTuple)) {
+    if(getOrcNextTuple(orcState->filename, tmpNextTuple)) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -628,21 +626,16 @@ fileIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
-    char tmp[10] = "999";
+    //char tmp[10] = "999";
     //read and fill next line's record
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         if(tmpNextTuple[i] != NULL) {
-            if(i == 2) {
-                columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                                tmp, orcState->typioparams[i],
-                                                tupledes->attrs[i]->atttypmod);
-            }
-            else {
-                columnValue = InputFunctionCall(&orcState->in_functions[i],
+
+            columnValue = InputFunctionCall(&orcState->in_functions[i],
                                                 tmpNextTuple[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
-            }
+
 
         }
         else {
@@ -691,7 +684,7 @@ fileEndForeignScan(ForeignScanState *node)
     }
 
     /*TODO: clear all file related memory */
-    releaseOrcBridgeMem();
+    releaseOrcReader(orcState->filename);
 
     /*int i;
     for(i=0; i<orcState->colNum; i++) {
