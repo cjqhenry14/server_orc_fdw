@@ -516,7 +516,7 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     count++;
-    if(count < 200) {
+    if(count < 20) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
