@@ -642,14 +642,23 @@ fileIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
+    char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     //read and fill next line's record
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
         if(tmpNextTuple[i] != NULL) {
 
-            columnValue = InputFunctionCall(&orcState->in_functions[i],
+            if(colNum == 4 && (i == 1 || i == 3)) {
+                columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                                ss[i], orcState->typioparams[i],
+                                                tupledes->attrs[i]->atttypmod);
+
+            }
+            else {
+                columnValue = InputFunctionCall(&orcState->in_functions[i],
                                                 tmpNextTuple[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
+            }
 
         }
         else {
