@@ -530,7 +530,8 @@ simIterateForeignScan(ForeignScanState *node)
 
     /*
      * 第0列用ss, fail, 不是第0列导致的问题
-     * 第1列用ss
+     * 第1列用ss, fail, 不是第1列导致的问题
+     * 第1列用ss,
      *
      * */
     char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
@@ -540,7 +541,7 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if(i==1) {
+        if(i==2) {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
                                             ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
