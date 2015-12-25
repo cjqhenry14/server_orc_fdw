@@ -103,8 +103,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->GetForeignPlan = fileGetForeignPlan;
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
-    //fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->IterateForeignScan = fileIterateForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
     fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
@@ -550,10 +550,12 @@ simIterateForeignScan(ForeignScanState *node)
      * 只对于nation表:
      * 第1列用tmpNextTuple, fail
      * 第3列用tmpNextTuple, fail
+     * 除了第1,3列用ss, 其余用tmpNextTuple, OK, 说明联查的时候, nation的1,3列都有问题
      *
      * 只对于supplier表:
      * 第1列用tmpNextTuple,  OK
      * 第3列用tmpNextTuple,  OK
+     *
      * */
     char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     ss[0][0] = '0' + count % 9;
