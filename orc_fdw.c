@@ -626,9 +626,9 @@ fileIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     /*has next tuple*/
-    char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
+    char** tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
     unsigned int i;
-    for (i=0; i<orcState->colNum; i++)
+    for (i=0; i<colNum; i++)
     {
         tmpNextTuple[i] = NULL;
     }
@@ -642,7 +642,7 @@ fileIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
 
-    char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
+    char ss[7][20] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     //read and fill next line's record
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
@@ -664,7 +664,7 @@ fileIterateForeignScan(ForeignScanState *node)
         ExecStoreVirtualTuple(slot);
 
 
-    for(i=0; i<orcState->colNum; i++) {
+    for(i=0; i<colNum; i++) {
         free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
