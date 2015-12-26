@@ -407,7 +407,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
                                                  ALLOCSET_DEFAULT_INITSIZE,
                                                  ALLOCSET_DEFAULT_MAXSIZE);
 
-    oldcontext = MemoryContextSwitchTo(orcState->orcContext);
+    //oldcontext = MemoryContextSwitchTo(orcState->orcContext);
 
 
 
@@ -482,7 +482,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
 
 
-    MemoryContextSwitchTo(oldcontext);
+    //MemoryContextSwitchTo(oldcontext);
 
     node->fdw_state = (void *) orcState;
 }
@@ -533,7 +533,7 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     /* switch to orc context for reading data */
-    MemoryContextSwitchTo(orcState->orcContext);
+    //MemoryContextSwitchTo(orcState->orcContext);
 
 
     //clear
@@ -605,7 +605,7 @@ simIterateForeignScan(ForeignScanState *node)
     free(tmpNextTuple);
      */
 
-    MemoryContextSwitchTo(oldContext);
+    //MemoryContextSwitchTo(oldContext);
 
     return slot;
 }
