@@ -407,7 +407,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
                                                  ALLOCSET_DEFAULT_INITSIZE,
                                                  ALLOCSET_DEFAULT_MAXSIZE);
 
-    //oldcontext = MemoryContextSwitchTo(orcState->orcContext);
+    oldcontext = MemoryContextSwitchTo(orcState->orcContext);
 
 
 
@@ -476,13 +476,13 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
-    orcState->nextTuple = (char **) malloc(orcState->colNum * sizeof(char *));
+    orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
 
 
 
 
 
-    //MemoryContextSwitchTo(oldcontext);
+    MemoryContextSwitchTo(oldcontext);
 
     node->fdw_state = (void *) orcState;
 }
@@ -533,18 +533,18 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     /* switch to orc context for reading data */
-    //MemoryContextSwitchTo(orcState->orcContext);
+    MemoryContextSwitchTo(orcState->orcContext);
 
 
 
 
-    char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
+    /*char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     for (i=0; i<orcState->colNum; i++)
     {
         tmpNextTuple[i] = NULL;
     }
-
+*/
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
@@ -590,11 +590,12 @@ simIterateForeignScan(ForeignScanState *node)
         ExecStoreVirtualTuple(slot);
 
 
-    for(i=0; i<orcState->colNum; i++) {
+    /*for(i=0; i<orcState->colNum; i++) {
         if(tmpNextTuple[i] != NULL)
             free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
+    */
 
     //clear
     for(i=0; i< colNum; i++) {
@@ -605,7 +606,7 @@ simIterateForeignScan(ForeignScanState *node)
     }
 
 
-    //MemoryContextSwitchTo(oldContext);
+    MemoryContextSwitchTo(oldContext);
 
     return slot;
 }
@@ -721,7 +722,7 @@ fileEndForeignScan(ForeignScanState *node)
 
     MemoryContextDelete(orcState->orcContext);
 
-    free(orcState->nextTuple);
+    //free(orcState->nextTuple);
 
     pfree(orcState);
 }
