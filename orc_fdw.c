@@ -394,7 +394,28 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     //fflush(logfile);
     //fclose(logfile);
 
+    /* Allocate workspace and zero all fields */
     OrcExeState *orcState;
+    orcState = (OrcExeState *) palloc0(sizeof(OrcExeState));
+
+
+    MemoryContext oldcontext;
+
+    /*TODO: memory context for palloc?*/
+    orcState->orcContext = AllocSetContextCreate(CurrentMemoryContext, "orc_fdw data context",
+                                                 ALLOCSET_DEFAULT_MINSIZE,
+                                                 ALLOCSET_DEFAULT_INITSIZE,
+                                                 ALLOCSET_DEFAULT_MAXSIZE);
+
+    oldcontext = MemoryContextSwitchTo(orcState->orcContext);
+
+
+
+
+
+
+
+
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
 
     /*
@@ -412,7 +433,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
      * Save state in node->fdw_state.  We must save enough information to call
      * BeginCopyFrom() again.
      */
-    orcState = (OrcExeState *) palloc(sizeof(OrcExeState));
+
     orcState->filename = options->filename;
 
     //get colNum
@@ -455,11 +476,13 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
-    /*TODO: memory context for palloc?*/
-    orcState->orcContext = AllocSetContextCreate(CurrentMemoryContext, "orc_fdw data context",
-                                                  ALLOCSET_DEFAULT_MINSIZE,
-                                                  ALLOCSET_DEFAULT_INITSIZE,
-                                                  ALLOCSET_DEFAULT_MAXSIZE);
+    orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
+
+
+
+
+
+    MemoryContextSwitchTo(oldcontext);
 
     node->fdw_state = (void *) orcState;
 }
@@ -502,6 +525,8 @@ simIterateForeignScan(ForeignScanState *node)
     TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
     unsigned int i;
+
+
     Datum *columnValues = slot->tts_values;
     bool *columnNulls = slot->tts_isnull;
     /* initialize all values for this row to null */
@@ -511,13 +536,23 @@ simIterateForeignScan(ForeignScanState *node)
     MemoryContextSwitchTo(orcState->orcContext);
 
 
+    //clear
+    for(i=0; i< colNum; i++) {
+        if(orcState->nextTuple[i] != NULL)
+            pfree(orcState->nextTuple[i]);
+
+        orcState->nextTuple[i] = NULL;
+    }
+
+
+/*
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     for (i=0; i<orcState->colNum; i++)
     {
         tmpNextTuple[i] = NULL;
     }
-
+*/
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
@@ -531,14 +566,10 @@ simIterateForeignScan(ForeignScanState *node)
     }
     */
 
-    //if(getOrcNextTuple(orcState->filename, tmpNextTuple))
-       // count++;
 
-    bool hasNext = getOrcNextTuple(orcState->filename, tmpNextTuple);
+    bool hasNext = getOrcNextTuple(orcState->filename, orcState->nextTuple);
 
     if(hasNext) {
-    //if(count < 280000) {
-
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -557,7 +588,7 @@ simIterateForeignScan(ForeignScanState *node)
         Datum columnValue = 0;
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        tmpNextTuple[i], orcState->typioparams[i],
+                                        orcState->nextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
@@ -566,11 +597,13 @@ simIterateForeignScan(ForeignScanState *node)
     if (found)
         ExecStoreVirtualTuple(slot);
 
+    /*
     for(i=0; i<orcState->colNum; i++) {
         if(tmpNextTuple[i] != NULL)
             free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
+     */
 
     MemoryContextSwitchTo(oldContext);
 
@@ -687,9 +720,6 @@ fileEndForeignScan(ForeignScanState *node)
     releaseOrcReader(orcState->filename);
 
     MemoryContextDelete(orcState->orcContext);
-
-    pfree(orcState->typioparams);
-    pfree(orcState->in_functions);
 
     pfree(orcState);
 }
