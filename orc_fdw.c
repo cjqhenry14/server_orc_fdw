@@ -588,7 +588,7 @@ simIterateForeignScan(ForeignScanState *node)
         Datum columnValue = 0;
 
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        orcState->nextTuple[i], orcState->typioparams[i],
+                                        ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
