@@ -537,22 +537,23 @@ simIterateForeignScan(ForeignScanState *node)
 
 
     //clear
-    for(i=0; i< colNum; i++) {
+    /*for(i=0; i< colNum; i++) {
         if(orcState->nextTuple[i] != NULL)
             free(orcState->nextTuple[i]);
 
         //orcState->nextTuple[i] = NULL;
     }
+    */
 
 
-/*
+
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     for (i=0; i<orcState->colNum; i++)
     {
         tmpNextTuple[i] = NULL;
     }
-*/
+
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
@@ -567,7 +568,7 @@ simIterateForeignScan(ForeignScanState *node)
     */
 
 
-    bool hasNext = getOrcNextTuple(orcState->filename, orcState->nextTuple);
+    bool hasNext = getOrcNextTuple(orcState->filename, tmpNextTuple);
 
     if(hasNext) {
         memset(columnNulls, false, colNum * sizeof(bool));
@@ -597,13 +598,13 @@ simIterateForeignScan(ForeignScanState *node)
     if (found)
         ExecStoreVirtualTuple(slot);
 
-    /*
+
     for(i=0; i<orcState->colNum; i++) {
         if(tmpNextTuple[i] != NULL)
             free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
-     */
+
 
     //MemoryContextSwitchTo(oldContext);
 
