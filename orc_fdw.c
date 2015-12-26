@@ -536,15 +536,6 @@ simIterateForeignScan(ForeignScanState *node)
     //MemoryContextSwitchTo(orcState->orcContext);
 
 
-    //clear
-    /*for(i=0; i< colNum; i++) {
-        if(orcState->nextTuple[i] != NULL)
-            free(orcState->nextTuple[i]);
-
-        //orcState->nextTuple[i] = NULL;
-    }
-    */
-
 
 
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
@@ -568,7 +559,7 @@ simIterateForeignScan(ForeignScanState *node)
     */
 
 
-    bool hasNext = getOrcNextTuple(orcState->filename, tmpNextTuple);
+    bool hasNext = getOrcNextTuple(orcState->filename, orcState->nextTuple);
 
     if(hasNext) {
         memset(columnNulls, false, colNum * sizeof(bool));
@@ -604,6 +595,14 @@ simIterateForeignScan(ForeignScanState *node)
             free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
+
+    //clear
+    for(i=0; i< colNum; i++) {
+        if(orcState->nextTuple[i] != NULL)
+            free(orcState->nextTuple[i]);
+
+        orcState->nextTuple[i] = NULL;
+    }
 
 
     //MemoryContextSwitchTo(oldContext);
@@ -721,6 +720,8 @@ fileEndForeignScan(ForeignScanState *node)
     releaseOrcReader(orcState->filename);
 
     MemoryContextDelete(orcState->orcContext);
+
+    free(orcState->nextTuple);
 
     pfree(orcState);
 }
