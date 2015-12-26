@@ -541,7 +541,7 @@ simIterateForeignScan(ForeignScanState *node)
         if(orcState->nextTuple[i] != NULL)
             free(orcState->nextTuple[i]);
 
-        orcState->nextTuple[i] = NULL;
+        //orcState->nextTuple[i] = NULL;
     }
 
 
