@@ -513,6 +513,9 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
+
+
+    //!!!!!不知道为什么!
     count++;
 
     if(count < 25000) {
