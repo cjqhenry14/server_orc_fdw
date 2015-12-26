@@ -509,7 +509,6 @@ simIterateForeignScan(ForeignScanState *node)
         tmpNextTuple[i] = NULL;
     }
 
-    getOrcNextTuple(orcState->filename, tmpNextTuple);
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
@@ -522,8 +521,10 @@ simIterateForeignScan(ForeignScanState *node)
         memset(columnNulls, true, colNum * sizeof(bool));
     }
     */
-    if(count < 250) {
-    //if(count < 250 || getOrcNextTuple(orcState->filename, tmpNextTuple)) {
+    if(count < 250 || getOrcNextTuple(orcState->filename, tmpNextTuple)) {
+    //if(count < 250) {
+        //getOrcNextTuple(orcState->filename, tmpNextTuple);
+
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -582,7 +583,8 @@ simIterateForeignScan(ForeignScanState *node)
         ExecStoreVirtualTuple(slot);
 
     for(i=0; i<orcState->colNum; i++) {
-        free(tmpNextTuple[i]);
+        if(tmpNextTuple[i] != NULL)
+            free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
 
