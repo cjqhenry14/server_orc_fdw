@@ -496,6 +496,10 @@ simIterateForeignScan(ForeignScanState *node)
     TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
     unsigned int i;
+    Datum *columnValues = slot->tts_values;
+    bool *columnNulls = slot->tts_isnull;
+    /* initialize all values for this row to null */
+    memset(columnValues, 0, colNum * sizeof(Datum));
 
 
     char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
@@ -505,20 +509,15 @@ simIterateForeignScan(ForeignScanState *node)
         tmpNextTuple[i] = NULL;
     }
 
-    getOrcNextTuple(orcState->filename, tmpNextTuple);
+    //getOrcNextTuple(orcState->filename, tmpNextTuple);
 
-    Datum *columnValues = slot->tts_values;
-    bool *columnNulls = slot->tts_isnull;
-    /* initialize all values for this row to null */
-    memset(columnValues, 0, colNum * sizeof(Datum));
+
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
 
-
-    //!!!!!不知道为什么!
     count++;
 
-    if(count < 25000) {
+    /*if(count < 25000) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
     }
@@ -526,8 +525,8 @@ simIterateForeignScan(ForeignScanState *node)
         found = false;
         memset(columnNulls, true, colNum * sizeof(bool));
     }
+    */
 
-/*
     if(getOrcNextTuple(orcState->filename, tmpNextTuple)) {
         memset(columnNulls, false, colNum * sizeof(bool));
         found = true;
@@ -536,11 +535,9 @@ simIterateForeignScan(ForeignScanState *node)
         found = false;
         memset(columnNulls, true, colNum * sizeof(bool));
     }
-     */
 
     //nation: int, string, int, string
     //supplier: int, string, string, int, string, double, string
-
     /*
      * 全部用ss, OK
      * 全部用tmpNextTuple, fail
