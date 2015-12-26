@@ -527,7 +527,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     bool hasNext = getOrcNextTuple(orcState->filename, tmpNextTuple);
 
-    if(count < 250 && hasNext) {
+    if(count < 250) {
     //if(count < 280000) {
 
         memset(columnNulls, false, colNum * sizeof(bool));
@@ -570,7 +570,7 @@ simIterateForeignScan(ForeignScanState *node)
      *
      * */
     char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
-    ss[0][0] = '0' + count % 9;
+    ss[0][0] = '0' + (int)hasNext;
     ss[0][1] = '\0';
 
     for(i = 0; i < colNum; i++) {
