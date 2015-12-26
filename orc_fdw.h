@@ -70,6 +70,8 @@ typedef struct OrcExeState
     List *queryRestrictionList; /* init in BeginForeignScan */
     TupleDesc tupleDescriptor;
 
+    MemoryContext orcContext;
+
 } OrcExeState;
 
 

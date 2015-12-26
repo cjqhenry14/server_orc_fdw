@@ -455,6 +455,11 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
+    /*TODO: memory context for palloc?*/
+    orcState->orcContext = AllocSetContextCreate(CurrentMemoryContext, "orc_fdw data context",
+                                                  ALLOCSET_DEFAULT_MINSIZE,
+                                                  ALLOCSET_DEFAULT_INITSIZE,
+                                                  ALLOCSET_DEFAULT_MAXSIZE);
 
     node->fdw_state = (void *) orcState;
 }
@@ -490,6 +495,7 @@ simIterateForeignScan(ForeignScanState *node)
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
     bool		found;
+    MemoryContext oldContext = CurrentMemoryContext;
 
     ExecClearTuple(slot);
 
@@ -500,6 +506,9 @@ simIterateForeignScan(ForeignScanState *node)
     bool *columnNulls = slot->tts_isnull;
     /* initialize all values for this row to null */
     memset(columnValues, 0, colNum * sizeof(Datum));
+
+    /* switch to orc context for reading data */
+    MemoryContextSwitchTo(orcState->orcContext);
 
 
     char** tmpNextTuple = (char **)palloc(orcState->colNum * sizeof(char *));
@@ -540,35 +549,6 @@ simIterateForeignScan(ForeignScanState *node)
 
     //nation: int, string, int, string
     //supplier: int, string, string, int, string, double, string
-    /*
-     * 全部用ss, OK
-     * 全部用tmpNextTuple, fail
-     * 第0列用ss, fail, 不是第0列导致的问题
-     * 第1列用ss, fail, 不是第1列导致的问题
-     * 第2列用ss, fail, 不是第2列导致的问题
-     * 第3列用ss, fail, 不是第3列导致的问题
-     * 第4列用ss, fail, 不是第4列导致的问题
-     * 第5列用ss, fail, 不是第5列导致的问题
-     * 第6列用ss, fail, 不是第6列导致的问题
-     *
-     * 第0列用tmpNextTuple, OK
-     * 第1列用tmpNextTuple, fail
-     * 第2列用tmpNextTuple, OK
-     * 第3列用tmpNextTuple, fail
-     * 第4列用tmpNextTuple, OK
-     * 第5列用tmpNextTuple, OK
-     * 第6列用tmpNextTuple, OK
-     *
-     * 只对于nation表:
-     * 第1列用tmpNextTuple, fail
-     * 第3列用tmpNextTuple, fail
-     * 除了第1,3列用ss, 其余用tmpNextTuple, OK, 说明联查的时候, nation的1,3列都有问题
-     *
-     * 只对于supplier表:
-     * 第1列用tmpNextTuple,  OK
-     * 第3列用tmpNextTuple,  OK
-     *
-     * */
     char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     ss[0][0] = '0' + (int)hasNext;
     ss[0][1] = '\0';
@@ -579,7 +559,6 @@ simIterateForeignScan(ForeignScanState *node)
         columnValue = InputFunctionCall(&orcState->in_functions[i],
                                         tmpNextTuple[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
-
 
         slot->tts_values[i] = columnValue;
     }
@@ -593,6 +572,7 @@ simIterateForeignScan(ForeignScanState *node)
     }
     pfree(tmpNextTuple);
 
+    MemoryContextSwitchTo(oldContext);
 
     return slot;
 }
@@ -705,6 +685,8 @@ fileEndForeignScan(ForeignScanState *node)
 
     /*TODO: clear all file related memory */
     releaseOrcReader(orcState->filename);
+
+    MemoryContextDelete(orcState->orcContext);
 
     pfree(orcState->typioparams);
     pfree(orcState->in_functions);
