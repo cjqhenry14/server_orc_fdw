@@ -89,37 +89,6 @@ public:
     unsigned long long OrcGetTupleCount(const char* filename) {
         return reader->getNumberOfRows();
     }
-
-    /* Helper functions */
-    void deleteTuple(char** tuple) {
-        for (unsigned int i=0; i<colNum; i++)
-        {
-            if(tuple[i]!=NULL) {
-                delete[] tuple[i];
-            }
-        }
-        delete [] tuple;
-    }
-
-    void clearTuple(char** tuple) {
-        for (unsigned int i=0; i<colNum; i++)
-        {
-            if(tuple[i] != NULL) {
-                delete [] tuple[i];
-                tuple[i] = NULL;
-            }
-        }
-    }
-
-    void printNextTuple(char** nextTuple) {
-        for (unsigned int i=0; i<colNum; i++)
-        {
-            if(nextTuple[i]!=NULL) {
-                printf("%s,  ", nextTuple[i]);
-            }
-        }
-        printf("\n");
-    }
 };
 
 std::unordered_map<const char*, OrcReader*> readerMap;//<filename, OrcReader>
