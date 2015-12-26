@@ -502,7 +502,7 @@ simIterateForeignScan(ForeignScanState *node)
     memset(columnValues, 0, colNum * sizeof(Datum));
 
 
-    char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
+    char** tmpNextTuple = (char **)palloc(orcState->colNum * sizeof(char *));
 
     for (i=0; i<orcState->colNum; i++)
     {
@@ -589,9 +589,9 @@ simIterateForeignScan(ForeignScanState *node)
 
     for(i=0; i<orcState->colNum; i++) {
         if(tmpNextTuple[i] != NULL)
-            free(tmpNextTuple[i]);
+            pfree(tmpNextTuple[i]);
     }
-    free(tmpNextTuple);
+    pfree(tmpNextTuple);
 
 
     return slot;
