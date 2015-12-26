@@ -527,7 +527,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     bool hasNext = getOrcNextTuple(orcState->filename, tmpNextTuple);
 
-    if(hasNext) {
+    if(count < 250 && hasNext) {
     //if(count < 280000) {
 
         memset(columnNulls, false, colNum * sizeof(bool));
