@@ -476,7 +476,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
-    orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
+    orcState->nextTuple = (char **) malloc(orcState->colNum * sizeof(char *));
 
 
 
@@ -539,7 +539,7 @@ simIterateForeignScan(ForeignScanState *node)
     //clear
     for(i=0; i< colNum; i++) {
         if(orcState->nextTuple[i] != NULL)
-            pfree(orcState->nextTuple[i]);
+            free(orcState->nextTuple[i]);
 
         orcState->nextTuple[i] = NULL;
     }
