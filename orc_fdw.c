@@ -511,7 +511,7 @@ simIterateForeignScan(ForeignScanState *node)
     MemoryContextSwitchTo(orcState->orcContext);
 
 
-    char** tmpNextTuple = (char **)palloc(orcState->colNum * sizeof(char *));
+    char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
 
     for (i=0; i<orcState->colNum; i++)
     {
@@ -568,9 +568,9 @@ simIterateForeignScan(ForeignScanState *node)
 
     for(i=0; i<orcState->colNum; i++) {
         if(tmpNextTuple[i] != NULL)
-            pfree(tmpNextTuple[i]);
+            free(tmpNextTuple[i]);
     }
-    pfree(tmpNextTuple);
+    free(tmpNextTuple);
 
     MemoryContextSwitchTo(oldContext);
 
