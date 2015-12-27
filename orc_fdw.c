@@ -564,7 +564,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     //nation: int, string, int, string
     //supplier: int, string, string, int, string, double, string
-    //char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
+    char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     //ss[0][0] = '0' + (int)hasNext;
     //ss[0][1] = '\0';
     for (i = 0; i < colNum; i++) {
@@ -575,7 +575,7 @@ simIterateForeignScan(ForeignScanState *node)
         }
         else {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                                orcState->nextTuple[i], orcState->typioparams[i],
+                                                ss[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
 
         }
