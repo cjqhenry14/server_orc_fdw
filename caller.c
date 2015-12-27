@@ -30,10 +30,10 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
     }
 
 
-    for (i=0; i<colNum; i++)
+    /*for (i=0; i<colNum; i++)
     {
         tmpNextTuple[i] = NULL;
-    }
+    }*/
 
     while(getOrcNextTuple(filename, ttt)) {
         printNextTuple(ttt, colNum);
