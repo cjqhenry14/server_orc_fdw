@@ -543,14 +543,6 @@ simIterateForeignScan(ForeignScanState *node)
     }
 
 
-    /*char** tmpNextTuple = (char **)malloc(orcState->colNum * sizeof(char *));
-
-    for (i=0; i<orcState->colNum; i++)
-    {
-        tmpNextTuple[i] = NULL;
-    }
-*/
-
     //use tmpNextTuple: count < 20, OK; <200 Fail;
     count++;
     /*if(count < 25000) {
@@ -584,8 +576,9 @@ simIterateForeignScan(ForeignScanState *node)
     for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
+
         columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                        orcState->nextTuple[i], orcState->typioparams[i],
+                                        ss[i], orcState->typioparams[i],
                                             tupledes->attrs[i]->atttypmod);
 
         slot->tts_values[i] = columnValue;
