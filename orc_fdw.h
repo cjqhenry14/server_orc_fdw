@@ -12,6 +12,8 @@
 #define ORC_TUPLE_COST_MULTIPLIER 10
 #define MAX_ROW_PER_BATCH 1000
 
+#define SIM_TUPLE_FIELD_LEN 200
+#define SIM_TUPLE_NUM 16
 /* Defines for valid option names */
 #define OPTION_NAME_FILENAME "filename"
 
@@ -68,7 +70,7 @@ typedef struct OrcExeState
     Oid		   *typioparams;	/* array of element types for in_functions */
 
     //char        **nextTuple;
-    char nextTuple[10][200];
+    char nextTuple[SIM_TUPLE_NUM][SIM_TUPLE_FIELD_LEN];
 
     List *queryRestrictionList; /* init in BeginForeignScan */
     TupleDesc tupleDescriptor;

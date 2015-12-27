@@ -539,7 +539,7 @@ simIterateForeignScan(ForeignScanState *node)
     MemoryContextSwitchTo(orcState->orcContext);
 
     for(i=0; i<orcState->colNum; i++) {
-        memset(orcState->nextTuple[i], 0, 200 * sizeof(char));
+        memset(orcState->nextTuple[i], 0, SIM_TUPLE_FIELD_LEN * sizeof(char));
     }
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
@@ -567,7 +567,7 @@ simIterateForeignScan(ForeignScanState *node)
 
     //nation: int, string, int, string
     //supplier: int, string, string, int, string, double, string
-    char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
+    //char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     //ss[0][0] = '0' + (int)hasNext;
     //ss[0][1] = '\0';
     for (i = 0; i < colNum; i++) {
@@ -577,17 +577,9 @@ simIterateForeignScan(ForeignScanState *node)
             slot->tts_isnull[i] = true;
         }
         else {
-
-            if(colNum == 4 && (i==1 || i==3)) {
-                columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                                ss[2], orcState->typioparams[i],
-                                                tupledes->attrs[i]->atttypmod);
-            }
-            else {
-                columnValue = InputFunctionCall(&orcState->in_functions[i],
+            columnValue = InputFunctionCall(&orcState->in_functions[i],
                                                 ss[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
-            }
 
         }
 
