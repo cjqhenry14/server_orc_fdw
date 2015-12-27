@@ -70,7 +70,7 @@ typedef struct OrcExeState
     Oid		   *typioparams;	/* array of element types for in_functions */
 
     //char        **nextTuple;
-    char nextTuple[SIM_TUPLE_NUM][SIM_TUPLE_FIELD_LEN];
+    char nextTuple[16][200];
 
     List *queryRestrictionList; /* init in BeginForeignScan */
     TupleDesc tupleDescriptor;
