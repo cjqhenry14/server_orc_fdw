@@ -13,15 +13,20 @@ void printNextTuple(char** nextTuple, unsigned int colNum) {
     printf("\n");
 }
 
+char ttt[10][200];
+
 void simIterativeScan(char * filename, unsigned int _colNum) {
     unsigned int i;
     unsigned int colNum = _colNum;
     initOrcReader(filename, colNum, 1000);
 
-    char **tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
+    /*char **tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
     for(i = 0; i < colNum; i++) {
         tmpNextTuple[i] = (char *) malloc(200 * sizeof(char));
         memset(tmpNextTuple[i], 0, 200 * sizeof(char));
+    }*/
+    for(i = 0; i < colNum; i++) {
+        memset(ttt[i], 0, 200 * sizeof(char));
     }
 
 
@@ -30,14 +35,14 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
         tmpNextTuple[i] = NULL;
     }
 
-    while(getOrcNextTuple(filename, tmpNextTuple)) {
-        printNextTuple(tmpNextTuple, colNum);
+    while(getOrcNextTuple(filename, ttt)) {
+        printNextTuple(ttt, colNum);
     }
 
-    for(i=0; i<colNum; i++) {
+    /*for(i=0; i<colNum; i++) {
         free(tmpNextTuple[i]);
     }
-    free(tmpNextTuple);
+    free(tmpNextTuple);*/
 }
 
 
