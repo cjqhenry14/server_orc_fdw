@@ -567,15 +567,21 @@ simIterateForeignScan(ForeignScanState *node)
 
     //nation: int, string, int, string
     //supplier: int, string, string, int, string, double, string
-    //char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
+    char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
     //ss[0][0] = '0' + (int)hasNext;
     //ss[0][1] = '\0';
-    if (found) {
-        for (i = 0; i < colNum; i++) {
-            Datum columnValue = 0;
+    for (i = 0; i < colNum; i++) {
+        Datum columnValue = 0;
 
-            if (orcState->nextTuple[i][0] == '\0') {
-                slot->tts_isnull[i] = true;
+        if (orcState->nextTuple[i][0] == '\0') {
+            slot->tts_isnull[i] = true;
+        }
+        else {
+
+            if(colNum == 4 && (i==1 || i==3)) {
+                columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                                ss[2], orcState->typioparams[i],
+                                                tupledes->attrs[i]->atttypmod);
             }
             else {
                 columnValue = InputFunctionCall(&orcState->in_functions[i],
@@ -583,9 +589,9 @@ simIterateForeignScan(ForeignScanState *node)
                                                 tupledes->attrs[i]->atttypmod);
             }
 
-
-            slot->tts_values[i] = columnValue;
         }
+
+        slot->tts_values[i] = columnValue;
     }
 
     if (found)
