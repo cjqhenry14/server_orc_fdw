@@ -67,7 +67,8 @@ typedef struct OrcExeState
     FmgrInfo   *in_functions;	/* array of input functions for each attrs */
     Oid		   *typioparams;	/* array of element types for in_functions */
 
-    char        **nextTuple;
+    //char        **nextTuple;
+    char nextTuple[10][200];
 
     List *queryRestrictionList; /* init in BeginForeignScan */
     TupleDesc tupleDescriptor;

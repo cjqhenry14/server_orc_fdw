@@ -476,10 +476,10 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
-    orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
-    for(i = 0; i < orcState->colNum; i++) {
-        orcState->nextTuple[i] = (char *) palloc0(200 * sizeof(char));
-    }
+    //orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
+    //for(i = 0; i < orcState->colNum; i++) {
+        //orcState->nextTuple[i] = (char *) palloc0(200 * sizeof(char));
+    //}
 
 
 
