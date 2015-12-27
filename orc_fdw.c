@@ -578,7 +578,7 @@ simIterateForeignScan(ForeignScanState *node)
         }
         else {
             columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                                ss[i], orcState->typioparams[i],
+                                            orcState->nextTuple[i], orcState->typioparams[i],
                                                 tupledes->attrs[i]->atttypmod);
 
         }
