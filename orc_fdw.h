@@ -13,7 +13,7 @@
 #define MAX_ROW_PER_BATCH 1000
 
 #define SIM_TUPLE_FIELD_LEN 200
-#define SIM_TUPLE_NUM 16
+#define SIM_TUPLE_NUM 10
 /* Defines for valid option names */
 #define OPTION_NAME_FILENAME "filename"
 
