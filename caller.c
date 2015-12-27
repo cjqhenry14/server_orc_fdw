@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void printNextTuple(char nextTuple[10][200], unsigned int colNum) {
+void printNextTuple(char **nextTuple, unsigned int colNum) {
     unsigned int i; 
     for (i=0; i<colNum; i++)
     {
@@ -20,12 +20,12 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
     unsigned int colNum = _colNum;
     initOrcReader(filename, colNum, 1000);
 
-    /*char **tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
+    char **tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
     for(i = 0; i < colNum; i++) {
         tmpNextTuple[i] = (char *) malloc(200 * sizeof(char));
         memset(tmpNextTuple[i], 0, 200 * sizeof(char));
     }
-*/
+
     for(i = 0; i < colNum; i++) {
         memset(ttt[i], 0, 200 * sizeof(char));
     }
@@ -34,8 +34,8 @@ void simIterativeScan(char * filename, unsigned int _colNum) {
         tmpNextTuple[i] = NULL;
     }*/
 
-    while(getOrcNextTuple(filename, ttt)) {
-        printNextTuple(ttt, colNum);
+    while(getOrcNextTuple(filename, tmpNextTuple)) {
+        printNextTuple(tmpNextTuple, colNum);
     }
 
     /*for(i=0; i<colNum; i++) {

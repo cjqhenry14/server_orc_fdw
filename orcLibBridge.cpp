@@ -52,7 +52,7 @@ public:
     /* iteratively get one line record.
      * return: false means no next record.
     * */
-    bool OrcGetNext(char tuple[10][200]) {
+    bool OrcGetNext(char **tuple) {
         if(batch->numElements == 0)
             return false;
 
@@ -121,7 +121,7 @@ void releaseOrcReader(const char* filename) {
  * iteratively get one line record, , should be used in IterativeForeignScan()
  * @return: false means no next record.
  */
-bool getOrcNextTuple(const char* filename, char tuple[10][200]) {
+bool getOrcNextTuple(const char* filename, char **tuple) {
     if(readerMap.find(filename) == readerMap.end()) {
         // haven't initialized
         return false;

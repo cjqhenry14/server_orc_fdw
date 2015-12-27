@@ -476,12 +476,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 
     //TODO: why add this line, fdw doesn't work.
     //orcState->queryRestrictionList = (List *) lsecond(foreignPrivateList);
-    //orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
-    //for(i = 0; i < orcState->colNum; i++) {
-        //orcState->nextTuple[i] = (char *) palloc0(200 * sizeof(char));
-    //}
-
-
+    orcState->nextTuple = (char **) palloc(orcState->colNum * sizeof(char *));
 
 
 
@@ -538,8 +533,10 @@ simIterateForeignScan(ForeignScanState *node)
     /* switch to orc context for reading data */
     MemoryContextSwitchTo(orcState->orcContext);
 
+    /*clear*/
     for(i=0; i<orcState->colNum; i++) {
-        memset(orcState->nextTuple[i], 0, SIM_TUPLE_FIELD_LEN * sizeof(char));
+        if(orcState->nextTuple[i] != NULL)
+            free(orcState->nextTuple[i]);
     }
 
     //use tmpNextTuple: count < 20, OK; <200 Fail;
@@ -573,7 +570,7 @@ simIterateForeignScan(ForeignScanState *node)
     for (i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if (orcState->nextTuple[i][0] == '\0') {
+        if (orcState->nextTuple[i] == NULL) {
             slot->tts_isnull[i] = true;
         }
         else {
@@ -712,9 +709,10 @@ fileEndForeignScan(ForeignScanState *node)
     /*TODO: clear all file related memory */
     releaseOrcReader(orcState->filename);
 
+    pfree(orcState->nextTuple);
+
     MemoryContextDelete(orcState->orcContext);
 
-    //free(orcState->nextTuple);
 
     pfree(orcState);
 }
