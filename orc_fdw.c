@@ -543,7 +543,7 @@ simIterateForeignScan(ForeignScanState *node)
     memset(slot->tts_values, 0, colNum * sizeof(Datum));
 
     /*has next tuple*/
-    char** tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
+    char** tmpNextTuple = (char **)palloc(colNum * sizeof(char *));
     unsigned int i;
     for (i=0; i<colNum; i++)
     {
@@ -582,9 +582,9 @@ simIterateForeignScan(ForeignScanState *node)
 
     //clear memory
     for(i=0; i<colNum; i++) {
-        free(tmpNextTuple[i]);
+        pfree(tmpNextTuple[i]);
     }
-    free(tmpNextTuple);
+    pfree(tmpNextTuple);
 
     MemoryContextSwitchTo(oldcontext);
 
