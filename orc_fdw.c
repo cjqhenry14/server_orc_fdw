@@ -104,10 +104,12 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->ExplainForeignScan = fileExplainForeignScan;
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
     fdwroutine->IterateForeignScan = fileIterateForeignScan;
-    //fdwroutine->IterateForeignScan = simIterateForeignScan;
-    fdwroutine->ReScanForeignScan = fileReScanForeignScan;
+    //simIterateForeignScan is just for testing.
+    fdwroutine->IterateForeignScan = simIterateForeignScan;
+    //fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
-    fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;// only for ANALYZE foreign table
+    // only for ANALYZE foreign table, now we don't implement it
+    fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;
 
     PG_RETURN_POINTER(fdwroutine);
 }
@@ -399,21 +401,15 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     orcState = (OrcExeState *) palloc0(sizeof(OrcExeState));
 
 
-    MemoryContext oldcontext;
+    MemoryContext oldcontext = CurrentMemoryContext;
 
-    /*TODO: memory context for palloc?*/
+    /*TODO: memory context for palloc*/
     orcState->orcContext = AllocSetContextCreate(CurrentMemoryContext, "orc_fdw data context",
                                                  ALLOCSET_DEFAULT_MINSIZE,
                                                  ALLOCSET_DEFAULT_INITSIZE,
                                                  ALLOCSET_DEFAULT_MAXSIZE);
 
-    oldcontext = MemoryContextSwitchTo(orcState->orcContext);
-
-
-
-
-
-
+    MemoryContextSwitchTo(orcState->orcContext);
 
 
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
@@ -485,6 +481,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
     node->fdw_state = (void *) orcState;
 }
 
+//just for testing
 void itoa(int i, char * s)
 {
     int len=0, sign=1, k;
@@ -509,6 +506,9 @@ void itoa(int i, char * s)
 }
 
 int count = 0;
+//nation: int, string, int, string
+//supplier: int, string, string, int, string, double, string
+//char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
 
 static TupleTableSlot *
 simIterateForeignScan(ForeignScanState *node)
@@ -516,68 +516,61 @@ simIterateForeignScan(ForeignScanState *node)
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
     TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
     bool		found;
-    MemoryContext oldContext = CurrentMemoryContext;
+
+    MemoryContext oldcontext = CurrentMemoryContext;
+
+    MemoryContextSwitchTo(orcState->orcContext);
 
     ExecClearTuple(slot);
 
+    //TupleDesc tupledes = slot->tts_tupleDescriptor;
     TupleDesc tupledes = orcState->tupleDescriptor;
     int colNum = tupledes->natts;
-    unsigned int i;
 
 
-    Datum *columnValues = slot->tts_values;
-    bool *columnNulls = slot->tts_isnull;
+
+
+
+    ///Datum *columnValues = slot->tts_values;
+    ///bool *columnNulls = slot->tts_isnull;
+    slot->tts_values = (Datum *) palloc(colNum * sizeof(Datum));
+    slot->tts_isnull = (bool *) palloc(colNum * sizeof(bool));
+
+
+
+
     /* initialize all values for this row to null */
-    memset(columnValues, 0, colNum * sizeof(Datum));
+    memset(slot->tts_values, 0, colNum * sizeof(Datum));
 
-    /* switch to orc context for reading data */
-    MemoryContextSwitchTo(orcState->orcContext);
-
-    /*clear*/
-    for(i=0; i<orcState->colNum; i++) {
-        if(orcState->nextTuple[i] != NULL)
-            pfree(orcState->nextTuple[i]);
+    /*has next tuple*/
+    char** tmpNextTuple = (char **)malloc(colNum * sizeof(char *));
+    unsigned int i;
+    for (i=0; i<colNum; i++)
+    {
+        tmpNextTuple[i] = NULL;
     }
 
-    //use tmpNextTuple: count < 20, OK; <200 Fail;
-    count++;
-    /*if(count < 25000) {
-        memset(columnNulls, false, colNum * sizeof(bool));
+    if(getOrcNextTuple(orcState->filename, tmpNextTuple)) {
+        memset(slot->tts_isnull, false, colNum * sizeof(bool));
         found = true;
     }
     else {
         found = false;
-        memset(columnNulls, true, colNum * sizeof(bool));
-    }
-    */
-
-    bool hasNext = getOrcNextTuple(orcState->filename, orcState->nextTuple);
-
-    if(hasNext) {
-        memset(columnNulls, false, colNum * sizeof(bool));
-        found = true;
-    }
-    else {
-        found = false;
-        memset(columnNulls, true, colNum * sizeof(bool));
+        memset(slot->tts_isnull, true, colNum * sizeof(bool));
     }
 
-    //nation: int, string, int, string
-    //supplier: int, string, string, int, string, double, string
-    //char ss[7][155] = {"1", "mike", "23", "99", "dddd", "5.5", "enen"};
-    //ss[0][0] = '0' + (int)hasNext;
-    //ss[0][1] = '\0';
-    for (i = 0; i < colNum; i++) {
+    //read and fill next line's record
+    for(i = 0; i < colNum; i++) {
         Datum columnValue = 0;
 
-        if (orcState->nextTuple[i] == NULL) {
-            slot->tts_isnull[i] = true;
+        if(tmpNextTuple[i] != NULL) {
+
+            columnValue = InputFunctionCall(&orcState->in_functions[i],
+                                            tmpNextTuple[i], orcState->typioparams[i],
+                                            tupledes->attrs[i]->atttypmod);
         }
         else {
-            columnValue = InputFunctionCall(&orcState->in_functions[i],
-                                            orcState->nextTuple[i], orcState->typioparams[i],
-                                                tupledes->attrs[i]->atttypmod);
-
+            slot->tts_isnull[i] = true;
         }
 
         slot->tts_values[i] = columnValue;
@@ -587,15 +580,13 @@ simIterateForeignScan(ForeignScanState *node)
         ExecStoreVirtualTuple(slot);
 
 
-    /*for(i=0; i<orcState->colNum; i++) {
-        if(tmpNextTuple[i] != NULL)
-            free(tmpNextTuple[i]);
+    //clear memory
+    for(i=0; i<colNum; i++) {
+        free(tmpNextTuple[i]);
     }
     free(tmpNextTuple);
-    */
 
-
-    MemoryContextSwitchTo(oldContext);
+    MemoryContextSwitchTo(oldcontext);
 
     return slot;
 }
@@ -698,7 +689,7 @@ fileReScanForeignScan(ForeignScanState *node)
 static void
 fileEndForeignScan(ForeignScanState *node)
 {
-    count = 0;
+    count = 0;//just for testing
     OrcExeState *orcState = (OrcExeState *) node->fdw_state;
 
     /* if festate is NULL, we are in EXPLAIN; nothing to do */
