@@ -4,7 +4,7 @@ This fdw is based on these codes:
 2) [Refer][cstore_fdw] https://github.com/citusdata/cstore_fdw, another orc_fdw, may use self defined orc format.  
 3) [Use]https://github.com/apache/orc/tree/master, apache orc c++ library.  
 4) [Use]https://github.com/cjqhenry14/localOrcCppLib, I modified the apache orc c++ library to support fdw.  
-  
+5) [Refer] http://doxygen.postgresql.org/file__fdw_8c_source.html, file_fdw is an official fdw for reading normal files.
 
 
 
