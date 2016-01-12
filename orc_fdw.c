@@ -105,8 +105,8 @@ orc_fdw_handler(PG_FUNCTION_ARGS)
     fdwroutine->BeginForeignScan = fileBeginForeignScan;
     fdwroutine->IterateForeignScan = fileIterateForeignScan;
     //simIterateForeignScan is just for testing.
-    fdwroutine->IterateForeignScan = simIterateForeignScan;
-    //fdwroutine->ReScanForeignScan = fileReScanForeignScan;
+    //fdwroutine->IterateForeignScan = simIterateForeignScan;
+    fdwroutine->ReScanForeignScan = fileReScanForeignScan;
     fdwroutine->EndForeignScan = fileEndForeignScan;
     // only for ANALYZE foreign table, now we don't implement it
     fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;

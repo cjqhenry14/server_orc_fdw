@@ -4,13 +4,15 @@ rm -f *.o
 rm -f *.a
 rm -f *.so
 
+# the bridge wrapper between orc c++ lib and orc_fdw
 gcc -fPIC -std=c++11  -c orcLibBridge.cpp  -o orcLibBridge.o  -I orcInclude -L orcLib -lz -lsnappy -lorc -lgmock -lprotobuf -lstdc++
 
 ar rsc liborcLibBridge.a orcLibBridge.o
 
+# compile and install fdw
 sudo make USE_PGXS=1 install
 
-
+# caller is just for testing.
 gcc  -c caller.c  -o caller.o
 
 gcc  -fPIC -std=c++11  -o caller caller.o  -I orcInclude -L. -lorcLibBridge -L  orcLib   -lorc -lgmock  -lsnappy -lz -lprotobuf -lm -lstdc++

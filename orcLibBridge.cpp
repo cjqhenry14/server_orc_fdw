@@ -118,7 +118,7 @@ void releaseOrcReader(const char* filename) {
 }
 
 /**
- * iteratively get one line record, , should be used in IterativeForeignScan()
+ * iteratively get one line record, should be used in IterativeForeignScan()
  * @return: false means no next record.
  */
 bool getOrcNextTuple(const char* filename, char **tuple) {
