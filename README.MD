@@ -26,9 +26,7 @@ CREATE EXTENSION orc_fdw;
 3) create orc server  
 create server orc_server foreign data wrapper orc_fdw;  
 
-4) create table for test_data1.orc (transferred from test_data1.txt)  
-create foreign table test_data1_orc (id INT, name VARCHAR(20), state CHAR(2), salary DOUBLE PRECISION, birthday DATE)  
-server orc_server options(filename '/usr/pgsql-9.4/test_data1.orc');  
+4) create table for test_data1.orc (transferred from test_data1.txt) create foreign table test_data1_orc (id INT, name VARCHAR(20), state CHAR(2), salary DOUBLE PRECISION, birthday DATE) server orc_server options(filename '/usr/pgsql-9.4/test_data1.orc');  
 
 5) do the query:  
 select * from test_data1_orc; // PASSED  
